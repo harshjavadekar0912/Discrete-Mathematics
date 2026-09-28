@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Tourist Guide Knowledge Graph Chatbot{% endblock %} | Discrete Mathematics</title>
+  <meta name="description" content="AI Tourist Guide Chatbot powered by Neo4j Knowledge Graph demonstrating Graph Theory, Relations, BFS, DFS, Dijkstra, and Set Theory.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <div class="brand-icon">🧭</div>
+      <div>
+        <div class="brand-title">NeoTravel Graph</div>
+        <div class="brand-subtitle">Discrete Mathematics Project</div>
+      </div>
+    </a>
+
+    <ul class="nav-links">
+      <li>
+        <a href="/" class="nav-link {% if page == 'chat' %}active{% endif %}">
+          <span>💬</span> Chatbot
+        </a>
+      </li>
+      <li>
+        <a href="/graph" class="nav-link {% if page == 'graph' %}active{% endif %}">
+          <span>🕸️</span> Knowledge Graph
+        </a>
+      </li>
+      <li>
+        <a href="/discrete-math" class="nav-link {% if page == 'math' %}active{% endif %}">
+          <span>📐</span> Discrete Math
+        </a>
+      </li>
+      <li>
+        <a href="/places" class="nav-link {% if page == 'places' %}active{% endif %}">
+          <span>📍</span> Places Directory
+        </a>
+      </li>
+    </ul>
+
+    <div class="nav-actions">
+      <div id="statusBadge" class="status-badge {% if neo4j_connected %}connected{% else %}in-memory{% endif %}" title="Click to view Neo4j Database Settings">
+        <span class="status-dot"></span>
+        <span id="statusText">
+          {% if neo4j_connected %}Neo4j Connected{% else %}In-Memory Graph Engine{% endif %}
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Neo4j Connection Modal -->
+  <div id="neo4jModal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-family: var(--font-heading); color: #fff; font-size: 1.25rem;">
+          ⚙️ Neo4j Database Configuration
+        </h3>
+        <button id="closeModalBtn" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+        The system automatically falls back to the high-performance <strong>In-Memory Knowledge Graph Engine</strong> when Neo4j is offline. Connect your live Neo4j instance below.
+      </p>
+
+      <form id="neo4jForm">
+        <div class="form-group">
+          <label class="form-label">Bolt URI</label>
+          <input type="text" id="neo4jUri" class="form-input" value="bolt://localhost:7687" placeholder="bolt://localhost:7687">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="neo4jUser" class="form-input" value="neo4j">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="neo4jPass" class="form-input" value="password">
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="submit" class="btn-primary" style="flex: 1;">Connect Neo4j</button>
+          <button type="button" id="seedBtn" class="btn-primary" style="flex: 1; background: #8b5cf6;">Seed Cypher Data</button>
+        </div>
+      </form>
+
+      <div id="neo4jResult" style="margin-top: 1rem; font-size: 0.85rem; text-align: center;"></div>
+    </div>
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

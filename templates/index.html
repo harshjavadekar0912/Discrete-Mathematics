@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Chatbot{% endblock %}
+
+{% block content %}
+<section class="hero-header">
+  <div class="hero-pill">
+    <span>🌐</span> Discrete Mathematics & Graph Theory Project
+  </div>
+  <h1 class="hero-title">
+    Tourist Guide <span>Knowledge Graph Chatbot</span>
+  </h1>
+  <p class="hero-desc">
+    Ask natural-language tourist questions about attractions, restaurants, hotels, and metro stations in <strong>Mumbai and Delhi</strong>. Every query is converted to Cypher and grounded in Graph Theory.
+  </p>
+</section>
+
+<div class="chat-container">
+  <!-- Left Side: Chatbox -->
+  <div class="chat-card">
+    <div id="chatMessages" class="chat-messages">
+      <!-- Initial Welcome Message from Bot -->
+      <div class="message bot">
+        <div class="avatar bot-avatar">🧭</div>
+        <div class="message-bubble">
+          <p>
+            Hello traveler! 👋 I am your <strong>Tourist Guide Knowledge Graph Chatbot</strong>.
+          </p>
+          <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.88rem;">
+            I use a <strong>Neo4j Knowledge Graph</strong> containing monuments, museums, hotels, restaurants, and transit stations across <strong>Mumbai & Delhi</strong>. I map your natural questions to <strong>Cypher queries</strong> and apply Discrete Mathematics principles (Graph Theory, Relations, BFS/DFS, Dijkstra, and Set Theory).
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #38bdf8;">
+            Try asking one of the questions on the right, or type your own question below!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input Area -->
+    <div class="chat-input-wrapper">
+      <form id="chatForm" class="chat-input-form">
+        <input 
+          type="text" 
+          id="chatInput" 
+          class="chat-input" 
+          placeholder="Ask a question (e.g. 'Which restaurants are near Gateway of India?')..."
+          autocomplete="off"
+          required
+        >
+        <button type="submit" id="sendBtn" class="chat-send-btn">
+          <span>Send</span>
+          <span>✈️</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Side: Sample Queries & Graph Metrics -->
+  <aside class="chat-sidebar">
+    <div class="sidebar-panel">
+      <div class="panel-title">
+        <span>💡</span> Sample Queries
+      </div>
+      <div class="query-chips">
+        <button class="chip-btn" data-query="Which restaurants are near Gateway of India?">
+          <span class="chip-badge">Graph 1-Hop Proximity</span>
+          <div>Which restaurants are near Gateway of India?</div>
+        </button>
+
+        <button class="chip-btn" data-query="Find hotels near Red Fort.">
+          <span class="chip-badge">Symmetric Relation (NEAR)</span>
+          <div>Find hotels near Red Fort.</div>
+        </button>
+
+        <button class="chip-btn" data-query="Show museums in Mumbai.">
+          <span class="chip-badge">Hierarchical Relation (LOCATED_IN)</span>
+          <div>Show museums in Mumbai.</div>
+        </button>
+
+        <button class="chip-btn" data-query="How can I reach Gateway of India from the nearest station?">
+          <span class="chip-badge">Transit Shortest Path</span>
+          <div>How can I reach Gateway of India from the nearest station?</div>
+        </button>
+
+        <button class="chip-btn" data-query="Find the cheapest hotel near Red Fort.">
+          <span class="chip-badge">Greedy Min-Cost Optimization</span>
+          <div>Find the cheapest hotel near Red Fort.</div>
+        </button>
+
+        <button class="chip-btn" data-query="Show museums and monuments.">
+          <span class="chip-badge">Set Theory (A ∪ B Union)</span>
+          <div>Show museums and monuments.</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Graph Metrics Panel -->
+    <div class="sidebar-panel">
+      <div class="panel-title">
+        <span>📊</span> Graph Properties
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Graph Order |V|</span>
+        <span class="metric-value">{{ total_nodes }} Vertices</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Graph Size |E|</span>
+        <span class="metric-value">{{ total_edges }} Edges</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Target Cities</span>
+        <span class="metric-value">Mumbai & Delhi</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Relation Types</span>
+        <span class="metric-value" style="font-size: 0.75rem; color: #a78bfa;">NEAR, LOCATED_IN, CONNECTED_TO</span>
+      </div>
+
+      <div style="margin-top: 1rem;">
+        <a href="/graph" class="btn-primary" style="font-size: 0.85rem; padding: 0.55rem; text-decoration: none;">
+          <span>🕸️</span> Open Full Graph Visualizer
+        </a>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script>
+  // Check if URL has ?q= parameter from directory click
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQuery = urlParams.get('q');
+    if (initialQuery) {
+      const input = document.getElementById('chatInput');
+      input.value = initialQuery;
+      document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+    }
+  });
+</script>
+{% endblock %}

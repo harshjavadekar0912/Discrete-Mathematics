@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Discrete Mathematics Algorithms{% endblock %}
+
+{% block content %}
+<section class="hero-header" style="margin-bottom: 2rem;">
+  <div class="hero-pill">
+    <span>📐</span> Course Project Demonstration
+  </div>
+  <h1 class="hero-title" style="font-size: 2.2rem;">
+    Discrete Mathematics <span>Algorithms & Concepts</span>
+  </h1>
+  <p class="hero-desc">
+    Interactive demonstrations of <strong>Graph Theory, Binary Relations, BFS/DFS Traversal, Dijkstra's Shortest Path</strong>, and <strong>Set Theory</strong> over the tourist knowledge graph.
+  </p>
+</section>
+
+<!-- Tabs Navigation -->
+<div class="math-tabs">
+  <button class="tab-btn active" data-target="tabBfsDfs">
+    <span>🚶</span> BFS & DFS Traversal
+  </button>
+  <button class="tab-btn" data-target="tabDijkstra">
+    <span>📍</span> Dijkstra Shortest Path
+  </button>
+  <button class="tab-btn" data-target="tabSetTheory">
+    <span>🔢</span> Set Theory (Union & Intersection)
+  </button>
+  <button class="tab-btn" data-target="tabRelations">
+    <span>🔗</span> Relations & Adjacency Matrix
+  </button>
+</div>
+
+<!-- =========================================================================
+     TAB 1: BFS & DFS TRAVERSALS
+     ========================================================================= -->
+<div id="tabBfsDfs" class="math-section active">
+  <div class="algorithm-grid">
+    <!-- Form Controls -->
+    <div class="algorithm-card">
+      <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: #fff; margin-bottom: 1.25rem;">
+        ⚙️ Traversal Configuration
+      </h3>
+      <form id="bfsForm">
+        <div class="form-group">
+          <label class="form-label">Algorithm</label>
+          <select id="traversalAlgoType" class="form-select">
+            <option value="BFS">Breadth-First Search (FIFO Queue, Level-by-Level)</option>
+            <option value="DFS">Depth-First Search (LIFO Stack, Deep Exploration)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Start Location (Root Vertex)</label>
+          <select id="bfsStartNode" class="form-select">
+            {% for place in places %}
+              <option value="{{ place.id }}" {% if place.id == 'mumbai_gateway' %}selected{% endif %}>
+                {{ place.name }} ({{ place.city }} - {{ place.category }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Maximum Exploration Depth</label>
+          <input type="number" id="bfsDepth" class="form-input" value="3" min="1" max="5">
+          <small style="color: var(--text-dim); font-size: 0.75rem;">Determines max hops from root vertex.</small>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">
+          <span>⚡</span> Run Traversal
+        </button>
+      </form>
+    </div>
+
+    <!-- Results & Animator Display -->
+    <div class="algorithm-card" id="bfsResultCard">
+      <div style="text-align: center; color: var(--text-dim); padding: 4rem 1rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🧭</div>
+        <h3>Select a start node and execute BFS or DFS</h3>
+        <p style="font-size: 0.85rem; max-width: 450px; margin: 0.5rem auto;">
+          The system will step through every queue/stack operation, showing how nearby tourist attractions are discovered level-by-level.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     TAB 2: DIJKSTRA'S SHORTEST PATH
+     ========================================================================= -->
+<div id="tabDijkstra" class="math-section">
+  <div class="algorithm-grid">
+    <!-- Form Controls -->
+    <div class="algorithm-card">
+      <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: #fff; margin-bottom: 1.25rem;">
+        📍 Route Origin & Destination
+      </h3>
+      <form id="dijkstraForm">
+        <div class="form-group">
+          <label class="form-label">Origin Vertex (Start Point)</label>
+          <select id="dijkstraStart" class="form-select">
+            <optgroup label="Mumbai Transit & Places">
+              {% for p in places if p.city == 'Mumbai' %}
+                <option value="{{ p.id }}" {% if p.id == 'mumbai_metro_csmt' %}selected{% endif %}>
+                  {{ p.name }} ({{ p.category }})
+                </option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Delhi Transit & Places">
+              {% for p in places if p.city == 'Delhi' %}
+                <option value="{{ p.id }}">
+                  {{ p.name }} ({{ p.category }})
+                </option>
+              {% endfor %}
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Destination Vertex (Target Point)</label>
+          <select id="dijkstraEnd" class="form-select">
+            <optgroup label="Mumbai Transit & Places">
+              {% for p in places if p.city == 'Mumbai' %}
+                <option value="{{ p.id }}" {% if p.id == 'mumbai_gateway' %}selected{% endif %}>
+                  {{ p.name }} ({{ p.category }})
+                </option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Delhi Transit & Places">
+              {% for p in places if p.city == 'Delhi' %}
+                <option value="{{ p.id }}" {% if p.id == 'delhi_red_fort' %}selected{% endif %}>
+                  {{ p.name }} ({{ p.category }})
+                </option>
+              {% endfor %}
+            </optgroup>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">
+          <span>🚀</span> Calculate Shortest Route
+        </button>
+      </form>
+
+      <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--text-muted);">
+        <strong>Mathematical Principle:</strong><br>
+        Greedy edge relaxation algorithm: maintains tentative distance vector <code>d[v]</code> and extracts minimum vertex <code>u</code> via min-heap priority queue:
+        <code>d[v] = min(d[v], d[u] + w(u,v))</code>
+      </div>
+    </div>
+
+    <!-- Dijkstra Route & Relaxation Table -->
+    <div class="algorithm-card" id="dijkstraResult">
+      <div style="text-align: center; color: var(--text-dim); padding: 4rem 1rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🗺️</div>
+        <h3>Select start & destination to compute shortest route</h3>
+        <p style="font-size: 0.85rem; max-width: 450px; margin: 0.5rem auto;">
+          Demonstrates graph edge weights based on real-world transit distances in km.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     TAB 3: SET THEORY STUDIO
+     ========================================================================= -->
+<div id="tabSetTheory" class="math-section">
+  <div class="algorithm-grid">
+    <!-- Set Operation Controls -->
+    <div class="algorithm-card">
+      <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: #fff; margin-bottom: 1.25rem;">
+        🔢 Set Operations Builder
+      </h3>
+      <form id="setForm">
+        <!-- Set A -->
+        <div style="background: rgba(2, 132, 199, 0.08); border-left: 3px solid #0284c7; padding: 0.75rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem;">
+          <strong style="color: #38bdf8; font-size: 0.85rem;">SET A CRITERIA</strong>
+          <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+            <label class="form-label">Category</label>
+            <select id="setACategory" class="form-select">
+              <option value="Museum">Museums</option>
+              <option value="Monument">Monuments</option>
+              <option value="Hotel">Hotels</option>
+              <option value="Restaurant">Restaurants</option>
+              <option value="">(All Categories)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">City</label>
+            <select id="setACity" class="form-select">
+              <option value="">Both Mumbai & Delhi</option>
+              <option value="Mumbai">Mumbai Only</option>
+              <option value="Delhi">Delhi Only</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Operation -->
+        <div class="form-group">
+          <label class="form-label">Set Operation</label>
+          <select id="setOperation" class="form-select" style="font-weight: 700; color: #fbbf24;">
+            <option value="UNION">Union: A ∪ B (Disjunction 'OR')</option>
+            <option value="INTERSECTION">Intersection: A ∩ B (Conjunction 'AND')</option>
+            <option value="DIFFERENCE">Difference: A \ B (Relative Complement)</option>
+            <option value="SYM_DIFFERENCE">Symmetric Difference: A Δ B</option>
+          </select>
+        </div>
+
+        <!-- Set B -->
+        <div style="background: rgba(245, 158, 11, 0.08); border-left: 3px solid #f59e0b; padding: 0.75rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem;">
+          <strong style="color: #fbbf24; font-size: 0.85rem;">SET B CRITERIA</strong>
+          <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+            <label class="form-label">Category</label>
+            <select id="setBCategory" class="form-select">
+              <option value="Monument">Monuments</option>
+              <option value="Museum">Museums</option>
+              <option value="Hotel">Hotels</option>
+              <option value="Restaurant">Restaurants</option>
+              <option value="">(All Categories)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">City</label>
+            <select id="setBCity" class="form-select">
+              <option value="">Both Mumbai & Delhi</option>
+              <option value="Mumbai">Mumbai Only</option>
+              <option value="Delhi">Delhi Only</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 1rem;">
+          <span>⚡</span> Compute Set Operation
+        </button>
+      </form>
+    </div>
+
+    <!-- Set Result Card -->
+    <div class="algorithm-card" id="setResultCard">
+      <div style="text-align: center; color: var(--text-dim); padding: 4rem 1rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+        <h3>Select two sets to compute Union, Intersection, or Difference</h3>
+        <p style="font-size: 0.85rem; max-width: 450px; margin: 0.5rem auto;">
+          Demonstrates Set Theory, cardinality, and the Principle of Inclusion-Exclusion |A ∪ B| = |A| + |B| - |A ∩ B|.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     TAB 4: RELATIONS & ADJACENCY MATRIX
+     ========================================================================= -->
+<div id="tabRelations" class="math-section">
+  <div style="display: grid; grid-template-columns: 320px 1fr; gap: 2rem;">
+    <!-- Selector Card -->
+    <div class="algorithm-card">
+      <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: #fff; margin-bottom: 1.25rem;">
+        🔗 Binary Relation Inspector
+      </h3>
+      <div class="form-group">
+        <label class="form-label">Relation to Analyze</label>
+        <select id="relTypeSelect" class="form-select">
+          <option value="NEAR">NEAR (Proximity edge: PlaceA ~ PlaceB)</option>
+          <option value="CONNECTED_TO">CONNECTED_TO (Transit edge)</option>
+          <option value="LOCATED_IN">LOCATED_IN (Hierarchical edge)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target City Universe</label>
+        <select id="relCitySelect" class="form-select">
+          <option value="Mumbai">Mumbai Places</option>
+          <option value="Delhi">Delhi Places</option>
+        </select>
+      </div>
+
+      <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+        <strong>Formal Definitions:</strong><br>
+        • <em>Reflexive:</em> ∀x ∈ V, (x,x) ∈ R<br>
+        • <em>Symmetric:</em> (x,y) ∈ R ⇒ (y,x) ∈ R<br>
+        • <em>Transitive:</em> (x,y) ∈ R ∧ (y,z) ∈ R ⇒ (x,z) ∈ R<br>
+        • <em>Equivalence:</em> Reflexive ∧ Symmetric ∧ Transitive
+      </div>
+    </div>
+
+    <!-- Relation Properties & Matrix Display -->
+    <div class="algorithm-card">
+      <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: #fff; margin-bottom: 1.25rem;">
+        📐 Mathematical Property Evaluation
+      </h3>
+      <div id="relResultCard">
+        <!-- Injected via JS -->
+      </div>
+
+      <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: #fff; margin: 2rem 0 1rem;">
+        🔢 Graph Adjacency Matrix A (1 = Connected, 0 = Disconnected)
+      </h3>
+      <div id="matrixContainer">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/discrete_math.js') }}"></script>
+<script>
+  // Trigger initial set calculation and BFS calculation on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const setForm = document.getElementById('setForm');
+    if (setForm) setForm.dispatchEvent(new Event('submit'));
+
+    const bfsForm = document.getElementById('bfsForm');
+    if (bfsForm) bfsForm.dispatchEvent(new Event('submit'));
+
+    const dijkstraForm = document.getElementById('dijkstraForm');
+    if (dijkstraForm) dijkstraForm.dispatchEvent(new Event('submit'));
+  });
+</script>
+{% endblock %}

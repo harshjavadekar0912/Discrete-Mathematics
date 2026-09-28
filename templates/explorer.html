@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Places Directory{% endblock %}
+
+{% block content %}
+<section class="hero-header" style="margin-bottom: 2rem;">
+  <div class="hero-pill">
+    <span>📍</span> Knowledge Graph Entities
+  </div>
+  <h1 class="hero-title" style="font-size: 2.2rem;">
+    Tourist Places <span>Directory</span>
+  </h1>
+  <p class="hero-desc">
+    Browse all attractions, heritage monuments, world-class museums, luxury & budget hotels, renowned eateries, and transit stations across Mumbai & Delhi.
+  </p>
+</section>
+
+<!-- Filter Toolbar -->
+<div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem 1.75rem; margin-bottom: 2rem; display: flex; flex-wrap: wrap; gap: 1.25rem; justify-content: space-between; align-items: center;">
+  <!-- Category Filter Pills -->
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <button class="filter-btn cat-chip active" data-cat="">All Places</button>
+    <button class="filter-btn cat-chip" data-cat="Monument">🏛️ Monuments</button>
+    <button class="filter-btn cat-chip" data-cat="Museum">🏺 Museums</button>
+    <button class="filter-btn cat-chip" data-cat="Hotel">🏨 Hotels</button>
+    <button class="filter-btn cat-chip" data-cat="Restaurant">🍽️ Restaurants</button>
+    <button class="filter-btn cat-chip" data-cat="MetroStation">🚇 Metro Stations</button>
+  </div>
+
+  <!-- Search & City Select -->
+  <div style="display: flex; gap: 0.75rem; align-items: center;">
+    <select id="cityFilter" class="form-select" style="width: auto; padding: 0.45rem 1rem; border-radius: var(--radius-full);">
+      <option value="">All Cities</option>
+      <option value="Mumbai">Mumbai</option>
+      <option value="Delhi">Delhi</option>
+    </select>
+
+    <input 
+      type="text" 
+      id="placeSearch" 
+      class="form-input" 
+      placeholder="Search places, cuisine, area..."
+      style="width: 240px; padding: 0.45rem 1rem; border-radius: var(--radius-full);"
+    >
+
+    <span id="placesCount" class="hero-pill" style="margin: 0; white-space: nowrap;">
+      Loading...
+    </span>
+  </div>
+</div>
+
+<!-- Places Cards Grid -->
+<div id="placesGrid" class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+  <!-- Injected dynamically via explorer.js -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/explorer.js') }}"></script>
+{% endblock %}

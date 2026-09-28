@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Graph Visualization{% endblock %}
+
+{% block extra_head %}
+<!-- vis-network CDN for high-performance physics-based graph rendering -->
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="hero-header" style="margin-bottom: 1.5rem;">
+  <div class="hero-pill">
+    <span>🕸️</span> Graph Theory Visualization: G = (V, E)
+  </div>
+  <h1 class="hero-title" style="font-size: 2rem;">
+    Interactive <span>Knowledge Graph Visualizer</span>
+  </h1>
+  <p class="hero-desc" style="font-size: 0.95rem;">
+    Explore relationships between tourist landmarks, hotels, eateries, and transit hubs. Drag nodes to inspect physics dynamics or click any vertex to inspect properties.
+  </p>
+</section>
+
+<div class="graph-viewport-card">
+  <!-- Controls Bar -->
+  <div class="graph-controls">
+    <button class="filter-btn active" data-city="">All Cities</button>
+    <button class="filter-btn" data-city="Mumbai">Mumbai</button>
+    <button class="filter-btn" data-city="Delhi">Delhi</button>
+    
+    <input 
+      type="text" 
+      id="graphSearchInput" 
+      placeholder="Search place in graph..." 
+      style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); border-radius: var(--radius-full); padding: 0.3rem 0.8rem; color: #fff; font-size: 0.78rem; outline: none; margin-left: 0.5rem; width: 170px;"
+    >
+  </div>
+
+  <!-- Main vis-network canvas -->
+  <div id="network-container"></div>
+
+  <!-- Legend -->
+  <div class="graph-legend">
+    <div class="legend-item"><span class="legend-color" style="background: #0284c7;"></span> City</div>
+    <div class="legend-item"><span class="legend-color" style="background: #f59e0b;"></span> Monument</div>
+    <div class="legend-item"><span class="legend-color" style="background: #8b5cf6;"></span> Museum</div>
+    <div class="legend-item"><span class="legend-color" style="background: #10b981;"></span> Hotel</div>
+    <div class="legend-item"><span class="legend-color" style="background: #ef4444;"></span> Restaurant</div>
+    <div class="legend-item"><span class="legend-color" style="background: #06b6d4;"></span> Metro Station</div>
+  </div>
+
+  <!-- Node Inspector Drawer -->
+  <div id="nodeInspector" class="node-inspector">
+    <div style="text-align: center; color: var(--text-dim); padding: 3rem 1rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">👆</div>
+      <p style="font-size: 0.9rem;">Click on any node in the knowledge graph to view its properties and connected edges.</p>
+    </div>
+  </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.82rem; color: var(--text-muted);">
+  <div>
+    <span>Edges: </span>
+    <span style="color: #fbbf24; font-weight: 600;">--- NEAR (Dashed)</span> | 
+    <span style="color: #38bdf8; font-weight: 600;">── CONNECTED_TO (Transit)</span> | 
+    <span style="color: #64748b; font-weight: 600;">──► LOCATED_IN (Directed)</span>
+  </div>
+  <div>
+    <span id="graphNodeCount">Loading...</span> | <span id="graphEdgeCount">Loading...</span>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/graph_viz.js') }}"></script>
+{% endblock %}
