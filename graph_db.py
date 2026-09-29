@@ -40,7 +40,7 @@ class KnowledgeGraphService:
         
         # LOCATED_IN
         for p in seed_data.PLACES:
-            city_id = "city_mumbai" if p["city"] == "Mumbai" else "city_delhi"
+            city_id = next(city["id"] for city in seed_data.CITIES if city["name"] == p["city"])
             self.edges.append({
                 "source": p["id"],
                 "target": city_id,

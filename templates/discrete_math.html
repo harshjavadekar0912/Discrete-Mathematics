@@ -114,6 +114,21 @@
                 </option>
               {% endfor %}
             </optgroup>
+            <optgroup label="Pune Transit & Places">
+              {% for p in places if p.city == 'Pune' %}
+                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Chennai Transit & Places">
+              {% for p in places if p.city == 'Chennai' %}
+                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Hyderabad Transit & Places">
+              {% for p in places if p.city == 'Hyderabad' %}
+                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+              {% endfor %}
+            </optgroup>
           </select>
         </div>
 
@@ -132,6 +147,21 @@
                 <option value="{{ p.id }}" {% if p.id == 'delhi_red_fort' %}selected{% endif %}>
                   {{ p.name }} ({{ p.category }})
                 </option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Pune Transit & Places">
+              {% for p in places if p.city == 'Pune' %}
+                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Chennai Transit & Places">
+              {% for p in places if p.city == 'Chennai' %}
+                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Hyderabad Transit & Places">
+              {% for p in places if p.city == 'Hyderabad' %}
+                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
               {% endfor %}
             </optgroup>
           </select>
@@ -189,9 +219,12 @@
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">City</label>
             <select id="setACity" class="form-select">
-              <option value="">Both Mumbai & Delhi</option>
+              <option value="">All Cities</option>
               <option value="Mumbai">Mumbai Only</option>
               <option value="Delhi">Delhi Only</option>
+              <option value="Pune">Pune Only</option>
+              <option value="Chennai">Chennai Only</option>
+              <option value="Hyderabad">Hyderabad Only</option>
             </select>
           </div>
         </div>
@@ -223,9 +256,12 @@
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">City</label>
             <select id="setBCity" class="form-select">
-              <option value="">Both Mumbai & Delhi</option>
+              <option value="">All Cities</option>
               <option value="Mumbai">Mumbai Only</option>
               <option value="Delhi">Delhi Only</option>
+              <option value="Pune">Pune Only</option>
+              <option value="Chennai">Chennai Only</option>
+              <option value="Hyderabad">Hyderabad Only</option>
             </select>
           </div>
         </div>
@@ -273,6 +309,9 @@
         <select id="relCitySelect" class="form-select">
           <option value="Mumbai">Mumbai Places</option>
           <option value="Delhi">Delhi Places</option>
+          <option value="Pune">Pune Places</option>
+          <option value="Chennai">Chennai Places</option>
+          <option value="Hyderabad">Hyderabad Places</option>
         </select>
       </div>
 

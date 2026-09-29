@@ -14,6 +14,9 @@ CREATE CONSTRAINT tier_id IF NOT EXISTS FOR (t:PriceTier) REQUIRE t.id IS UNIQUE
 // 3. Create City Nodes
 CREATE (:City {id: 'city_mumbai', name: 'Mumbai', state: 'Maharashtra', country: 'India', description: 'Financial capital of India, known for colonial architecture, seaside promenades, and Bollywood.'});
 CREATE (:City {id: 'city_delhi', name: 'Delhi', state: 'Delhi NCR', country: 'India', description: 'Historical capital of India, home to Mughal monuments, ancient heritage, and vibrant bazaars.'});
+CREATE (:City {id: 'city_pune', name: 'Pune', state: 'Maharashtra', country: 'India', description: 'Cultural city known for Maratha history, museums, and its vibrant food scene.'});
+CREATE (:City {id: 'city_chennai', name: 'Chennai', state: 'Tamil Nadu', country: 'India', description: 'Coastal capital of Tamil Nadu known for temples, museums, and South Indian culture.'});
+CREATE (:City {id: 'city_hyderabad', name: 'Hyderabad', state: 'Telangana', country: 'India', description: 'Historic city known for the Charminar, Deccan heritage, and Hyderabadi cuisine.'});
 
 // 4. Create Price Tier Nodes
 CREATE (:PriceTier {id: 'price_free', name: 'Free Entry', tier: 'Free', max_inr: 0});
@@ -65,6 +68,24 @@ CREATE (:Place:MetroStation {id: 'delhi_metro_lal_quila', name: 'Lal Quila Metro
 CREATE (:Place:MetroStation {id: 'delhi_metro_chandni_chowk', name: 'Chandni Chowk Metro Station', category: 'MetroStation', city: 'Delhi', area: 'Chandni Chowk', rating: 4.4, description: 'Major station connecting Delhi\'s bustling spice markets and Old Delhi monuments.', price_tier: 'Transit', line: 'Yellow Line'});
 CREATE (:Place:MetroStation {id: 'delhi_metro_central_sec', name: 'Central Secretariat Metro Station', category: 'MetroStation', city: 'Delhi', area: 'Rajpath', rating: 4.7, description: 'Interchange station located near National Museum, Kartavya Path, and India Gate.', price_tier: 'Transit', line: 'Yellow Line & Violet Line interchange'});
 CREATE (:Place:MetroStation {id: 'delhi_metro_qutub_minar', name: 'Qutab Minar Metro Station', category: 'MetroStation', city: 'Delhi', area: 'Mehrauli', rating: 4.5, description: 'Yellow Line station providing swift access to the Qutub Minar complex.', price_tier: 'Transit', line: 'Yellow Line'});
+CREATE (:Place:Monument {id: 'pune_shaniwar_wada', name: 'Shaniwar Wada', category: 'Monument', city: 'Pune', area: 'Shaniwar Peth', rating: 4.5, description: 'Historic Peshwa fortification and palace in the heart of Pune.', price_tier: 'Budget', entry_fee: 25});
+CREATE (:Place:Monument {id: 'pune_dagdusheth', name: 'Dagdusheth Halwai Ganpati Temple', category: 'Monument', city: 'Pune', area: 'Budhwar Peth', rating: 4.8, description: 'Famous Ganesh temple known for its ornate shrine and long-standing tradition.', price_tier: 'Free', entry_fee: 0});
+CREATE (:Place:Museum {id: 'pune_raja_dinkar_kelkar', name: 'Raja Dinkar Kelkar Museum', category: 'Museum', city: 'Pune', area: 'Shukrawar Peth', rating: 4.5, description: 'Museum displaying an extensive collection of Indian art and everyday objects.', price_tier: 'Budget', entry_fee: 100});
+CREATE (:Place:Restaurant {id: 'pune_shabree', name: 'Shabree', category: 'Restaurant', city: 'Pune', area: 'Deccan Gymkhana', rating: 4.3, description: 'Popular restaurant serving traditional Maharashtrian thalis.', price_tier: 'Budget', price_inr: 500, cuisine: 'Maharashtrian'});
+CREATE (:Place:Hotel {id: 'pune_fern', name: 'The Fern Residency Pune', category: 'Hotel', city: 'Pune', area: 'Shivajinagar', rating: 4.2, description: 'Contemporary hotel with convenient access to central Pune.', price_tier: 'Moderate', price_inr: 4500, stars: 4});
+CREATE (:Place:MetroStation {id: 'pune_pmc_metro', name: 'PMC Metro Station', category: 'MetroStation', city: 'Pune', area: 'Shivajinagar', rating: 4.3, description: 'Pune Metro station serving the central business district.', price_tier: 'Transit', line: 'Pune Metro Aqua Line'});
+CREATE (:Place:Monument {id: 'chennai_marina', name: 'Marina Beach', category: 'Monument', city: 'Chennai', area: 'Marina', rating: 4.5, description: 'Landmark urban beach along the Bay of Bengal and a popular city promenade.', price_tier: 'Free', entry_fee: 0});
+CREATE (:Place:Monument {id: 'chennai_kapaleeshwarar', name: 'Kapaleeshwarar Temple', category: 'Monument', city: 'Chennai', area: 'Mylapore', rating: 4.7, description: 'Historic Dravidian-style Shiva temple in the Mylapore neighbourhood.', price_tier: 'Free', entry_fee: 0});
+CREATE (:Place:Museum {id: 'chennai_government_museum', name: 'Government Museum Chennai', category: 'Museum', city: 'Chennai', area: 'Egmore', rating: 4.5, description: 'Major museum complex with archaeology, art, and natural history collections.', price_tier: 'Budget', entry_fee: 15});
+CREATE (:Place:Restaurant {id: 'chennai_murugan_idli', name: 'Murugan Idli Shop', category: 'Restaurant', city: 'Chennai', area: 'T. Nagar', rating: 4.3, description: 'Well-known eatery serving idli, dosa, and traditional Tamil dishes.', price_tier: 'Budget', price_inr: 350, cuisine: 'South Indian'});
+CREATE (:Place:Hotel {id: 'chennai_savera', name: 'Savera Hotel', category: 'Hotel', city: 'Chennai', area: 'Mylapore', rating: 4.2, description: 'Established city hotel close to Chennai\'s central cultural districts.', price_tier: 'Moderate', price_inr: 6000, stars: 4});
+CREATE (:Place:MetroStation {id: 'chennai_egmore_metro', name: 'Egmore Metro Station', category: 'MetroStation', city: 'Chennai', area: 'Egmore', rating: 4.3, description: 'Metro station serving Egmore railway station and nearby attractions.', price_tier: 'Transit', line: 'Chennai Metro Blue Line'});
+CREATE (:Place:Monument {id: 'hyderabad_charminar', name: 'Charminar', category: 'Monument', city: 'Hyderabad', area: 'Old City', rating: 4.6, description: 'Four-minaret monument and defining landmark of Hyderabad\'s Old City.', price_tier: 'Budget', entry_fee: 25});
+CREATE (:Place:Monument {id: 'hyderabad_golconda', name: 'Golconda Fort', category: 'Monument', city: 'Hyderabad', area: 'Ibrahim Bagh', rating: 4.6, description: 'Hilltop fort complex renowned for its history and acoustic design.', price_tier: 'Budget', entry_fee: 25});
+CREATE (:Place:Museum {id: 'hyderabad_salar_jung', name: 'Salar Jung Museum', category: 'Museum', city: 'Hyderabad', area: 'Darulshifa', rating: 4.6, description: 'Art museum with collections spanning India, Europe, and Asia.', price_tier: 'Budget', entry_fee: 50});
+CREATE (:Place:Restaurant {id: 'hyderabad_paradise', name: 'Paradise Biryani', category: 'Restaurant', city: 'Hyderabad', area: 'Secunderabad', rating: 4.2, description: 'Popular restaurant known for Hyderabadi biryani and local dishes.', price_tier: 'Budget', price_inr: 500, cuisine: 'Hyderabadi'});
+CREATE (:Place:Hotel {id: 'hyderabad_taj_deccan', name: 'Taj Deccan', category: 'Hotel', city: 'Hyderabad', area: 'Banjara Hills', rating: 4.5, description: 'Full-service hotel in the Banjara Hills neighbourhood.', price_tier: 'Luxury', price_inr: 12000, stars: 5});
+CREATE (:Place:MetroStation {id: 'hyderabad_charminar_metro', name: 'MGBS Metro Station', category: 'MetroStation', city: 'Hyderabad', area: 'Gowliguda', rating: 4.3, description: 'Metro station connecting the Mahatma Gandhi Bus Station and Old City.', price_tier: 'Transit', line: 'Hyderabad Metro Green Line'});
 
 // 6. Create LOCATED_IN Relations (Place -> City)
 MATCH (p:Place {id: 'mumbai_gateway'}), (c:City {id: 'city_mumbai'}) CREATE (p)-[:LOCATED_IN]->(c);
@@ -110,6 +131,24 @@ MATCH (p:Place {id: 'delhi_metro_lal_quila'}), (c:City {id: 'city_delhi'}) CREAT
 MATCH (p:Place {id: 'delhi_metro_chandni_chowk'}), (c:City {id: 'city_delhi'}) CREATE (p)-[:LOCATED_IN]->(c);
 MATCH (p:Place {id: 'delhi_metro_central_sec'}), (c:City {id: 'city_delhi'}) CREATE (p)-[:LOCATED_IN]->(c);
 MATCH (p:Place {id: 'delhi_metro_qutub_minar'}), (c:City {id: 'city_delhi'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'pune_shaniwar_wada'}), (c:City {id: 'city_pune'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'pune_dagdusheth'}), (c:City {id: 'city_pune'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'pune_raja_dinkar_kelkar'}), (c:City {id: 'city_pune'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'pune_shabree'}), (c:City {id: 'city_pune'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'pune_fern'}), (c:City {id: 'city_pune'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'pune_pmc_metro'}), (c:City {id: 'city_pune'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'chennai_marina'}), (c:City {id: 'city_chennai'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'chennai_kapaleeshwarar'}), (c:City {id: 'city_chennai'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'chennai_government_museum'}), (c:City {id: 'city_chennai'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'chennai_murugan_idli'}), (c:City {id: 'city_chennai'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'chennai_savera'}), (c:City {id: 'city_chennai'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'chennai_egmore_metro'}), (c:City {id: 'city_chennai'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'hyderabad_charminar'}), (c:City {id: 'city_hyderabad'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'hyderabad_golconda'}), (c:City {id: 'city_hyderabad'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'hyderabad_salar_jung'}), (c:City {id: 'city_hyderabad'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'hyderabad_paradise'}), (c:City {id: 'city_hyderabad'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'hyderabad_taj_deccan'}), (c:City {id: 'city_hyderabad'}) CREATE (p)-[:LOCATED_IN]->(c);
+MATCH (p:Place {id: 'hyderabad_charminar_metro'}), (c:City {id: 'city_hyderabad'}) CREATE (p)-[:LOCATED_IN]->(c);
 
 // 7. Create HAS_PRICE Relations (Place -> PriceTier)
 MATCH (p:Place {id: 'mumbai_gateway'}), (t:PriceTier {id: 'price_free'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Free'}]->(t);
@@ -155,6 +194,24 @@ MATCH (p:Place {id: 'delhi_metro_lal_quila'}), (t:PriceTier {id: 'price_moderate
 MATCH (p:Place {id: 'delhi_metro_chandni_chowk'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Transit'}]->(t);
 MATCH (p:Place {id: 'delhi_metro_central_sec'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Transit'}]->(t);
 MATCH (p:Place {id: 'delhi_metro_qutub_minar'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Transit'}]->(t);
+MATCH (p:Place {id: 'pune_shaniwar_wada'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 25, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'pune_dagdusheth'}), (t:PriceTier {id: 'price_free'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Free'}]->(t);
+MATCH (p:Place {id: 'pune_raja_dinkar_kelkar'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 100, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'pune_shabree'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 500, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'pune_fern'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 4500, tier: 'Moderate'}]->(t);
+MATCH (p:Place {id: 'pune_pmc_metro'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Transit'}]->(t);
+MATCH (p:Place {id: 'chennai_marina'}), (t:PriceTier {id: 'price_free'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Free'}]->(t);
+MATCH (p:Place {id: 'chennai_kapaleeshwarar'}), (t:PriceTier {id: 'price_free'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Free'}]->(t);
+MATCH (p:Place {id: 'chennai_government_museum'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 15, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'chennai_murugan_idli'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 350, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'chennai_savera'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 6000, tier: 'Moderate'}]->(t);
+MATCH (p:Place {id: 'chennai_egmore_metro'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Transit'}]->(t);
+MATCH (p:Place {id: 'hyderabad_charminar'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 25, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'hyderabad_golconda'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 25, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'hyderabad_salar_jung'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 50, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'hyderabad_paradise'}), (t:PriceTier {id: 'price_budget'}) CREATE (p)-[:HAS_PRICE {amount_inr: 500, tier: 'Budget'}]->(t);
+MATCH (p:Place {id: 'hyderabad_taj_deccan'}), (t:PriceTier {id: 'price_luxury'}) CREATE (p)-[:HAS_PRICE {amount_inr: 12000, tier: 'Luxury'}]->(t);
+MATCH (p:Place {id: 'hyderabad_charminar_metro'}), (t:PriceTier {id: 'price_moderate'}) CREATE (p)-[:HAS_PRICE {amount_inr: 0, tier: 'Transit'}]->(t);
 
 // 8. Create NEAR Relations (Symmetric Binary Relation)
 MATCH (a:Place {id: 'mumbai_gateway'}), (b:Place {id: 'mumbai_taj_hotel'}) CREATE (a)-[:NEAR {distance_km: 0.1}]->(b), (b)-[:NEAR {distance_km: 0.1}]->(a);
@@ -189,6 +246,18 @@ MATCH (a:Place {id: 'delhi_national_museum'}), (b:Place {id: 'delhi_imperial_hot
 MATCH (a:Place {id: 'delhi_national_museum'}), (b:Place {id: 'delhi_le_meridien'}) CREATE (a)-[:NEAR {distance_km: 1.2}]->(b), (b)-[:NEAR {distance_km: 1.2}]->(a);
 MATCH (a:Place {id: 'delhi_imperial_hotel'}), (b:Place {id: 'delhi_saravana_bhavan'}) CREATE (a)-[:NEAR {distance_km: 0.7}]->(b), (b)-[:NEAR {distance_km: 0.7}]->(a);
 MATCH (a:Place {id: 'delhi_india_gate'}), (b:Place {id: 'delhi_national_museum'}) CREATE (a)-[:NEAR {distance_km: 1.4}]->(b), (b)-[:NEAR {distance_km: 1.4}]->(a);
+MATCH (a:Place {id: 'pune_shaniwar_wada'}), (b:Place {id: 'pune_dagdusheth'}) CREATE (a)-[:NEAR {distance_km: 0.8}]->(b), (b)-[:NEAR {distance_km: 0.8}]->(a);
+MATCH (a:Place {id: 'pune_shaniwar_wada'}), (b:Place {id: 'pune_raja_dinkar_kelkar'}) CREATE (a)-[:NEAR {distance_km: 1.5}]->(b), (b)-[:NEAR {distance_km: 1.5}]->(a);
+MATCH (a:Place {id: 'pune_shaniwar_wada'}), (b:Place {id: 'pune_shabree'}) CREATE (a)-[:NEAR {distance_km: 2.0}]->(b), (b)-[:NEAR {distance_km: 2.0}]->(a);
+MATCH (a:Place {id: 'pune_raja_dinkar_kelkar'}), (b:Place {id: 'pune_shabree'}) CREATE (a)-[:NEAR {distance_km: 1.2}]->(b), (b)-[:NEAR {distance_km: 1.2}]->(a);
+MATCH (a:Place {id: 'chennai_marina'}), (b:Place {id: 'chennai_kapaleeshwarar'}) CREATE (a)-[:NEAR {distance_km: 3.0}]->(b), (b)-[:NEAR {distance_km: 3.0}]->(a);
+MATCH (a:Place {id: 'chennai_marina'}), (b:Place {id: 'chennai_savera'}) CREATE (a)-[:NEAR {distance_km: 4.0}]->(b), (b)-[:NEAR {distance_km: 4.0}]->(a);
+MATCH (a:Place {id: 'chennai_government_museum'}), (b:Place {id: 'chennai_egmore_metro'}) CREATE (a)-[:NEAR {distance_km: 0.5}]->(b), (b)-[:NEAR {distance_km: 0.5}]->(a);
+MATCH (a:Place {id: 'chennai_government_museum'}), (b:Place {id: 'chennai_murugan_idli'}) CREATE (a)-[:NEAR {distance_km: 4.0}]->(b), (b)-[:NEAR {distance_km: 4.0}]->(a);
+MATCH (a:Place {id: 'hyderabad_charminar'}), (b:Place {id: 'hyderabad_salar_jung'}) CREATE (a)-[:NEAR {distance_km: 2.0}]->(b), (b)-[:NEAR {distance_km: 2.0}]->(a);
+MATCH (a:Place {id: 'hyderabad_charminar'}), (b:Place {id: 'hyderabad_paradise'}) CREATE (a)-[:NEAR {distance_km: 6.0}]->(b), (b)-[:NEAR {distance_km: 6.0}]->(a);
+MATCH (a:Place {id: 'hyderabad_charminar'}), (b:Place {id: 'hyderabad_charminar_metro'}) CREATE (a)-[:NEAR {distance_km: 2.5}]->(b), (b)-[:NEAR {distance_km: 2.5}]->(a);
+MATCH (a:Place {id: 'hyderabad_golconda'}), (b:Place {id: 'hyderabad_taj_deccan'}) CREATE (a)-[:NEAR {distance_km: 8.0}]->(b), (b)-[:NEAR {distance_km: 8.0}]->(a);
 
 // 9. Create CONNECTED_TO Relations (Transit and Navigation Routes)
 MATCH (a:Place {id: 'mumbai_metro_colaba'}), (b:Place {id: 'mumbai_gateway'}) CREATE (a)-[:CONNECTED_TO {distance_km: 1.1, mode: 'Walk / Shuttle'}]->(b), (b)-[:CONNECTED_TO {distance_km: 1.1, mode: 'Walk / Shuttle'}]->(a);
@@ -212,3 +281,9 @@ MATCH (a:Place {id: 'delhi_metro_chandni_chowk'}), (b:Place {id: 'delhi_metro_ce
 MATCH (a:Place {id: 'delhi_metro_lal_quila'}), (b:Place {id: 'delhi_metro_central_sec'}) CREATE (a)-[:CONNECTED_TO {distance_km: 4.2, mode: 'Violet Line'}]->(b), (b)-[:CONNECTED_TO {distance_km: 4.2, mode: 'Violet Line'}]->(a);
 MATCH (a:Place {id: 'delhi_metro_chandni_chowk'}), (b:Place {id: 'delhi_metro_lal_quila'}) CREATE (a)-[:CONNECTED_TO {distance_km: 0.9, mode: 'Heritage Walkway'}]->(b), (b)-[:CONNECTED_TO {distance_km: 0.9, mode: 'Heritage Walkway'}]->(a);
 MATCH (a:Place {id: 'delhi_metro_central_sec'}), (b:Place {id: 'delhi_metro_qutub_minar'}) CREATE (a)-[:CONNECTED_TO {distance_km: 12.0, mode: 'Yellow Line'}]->(b), (b)-[:CONNECTED_TO {distance_km: 12.0, mode: 'Yellow Line'}]->(a);
+MATCH (a:Place {id: 'pune_pmc_metro'}), (b:Place {id: 'pune_shaniwar_wada'}) CREATE (a)-[:CONNECTED_TO {distance_km: 1.5, mode: 'Walk / Pune Metro'}]->(b), (b)-[:CONNECTED_TO {distance_km: 1.5, mode: 'Walk / Pune Metro'}]->(a);
+MATCH (a:Place {id: 'chennai_egmore_metro'}), (b:Place {id: 'chennai_government_museum'}) CREATE (a)-[:CONNECTED_TO {distance_km: 0.5, mode: 'Walk'}]->(b), (b)-[:CONNECTED_TO {distance_km: 0.5, mode: 'Walk'}]->(a);
+MATCH (a:Place {id: 'chennai_egmore_metro'}), (b:Place {id: 'chennai_marina'}) CREATE (a)-[:CONNECTED_TO {distance_km: 5.0, mode: 'Blue Line / Bus'}]->(b), (b)-[:CONNECTED_TO {distance_km: 5.0, mode: 'Blue Line / Bus'}]->(a);
+MATCH (a:Place {id: 'hyderabad_charminar_metro'}), (b:Place {id: 'hyderabad_charminar'}) CREATE (a)-[:CONNECTED_TO {distance_km: 2.5, mode: 'Green Line / Bus'}]->(b), (b)-[:CONNECTED_TO {distance_km: 2.5, mode: 'Green Line / Bus'}]->(a);
+MATCH (a:Place {id: 'hyderabad_charminar_metro'}), (b:Place {id: 'hyderabad_salar_jung'}) CREATE (a)-[:CONNECTED_TO {distance_km: 2.0, mode: 'Green Line / Walk'}]->(b), (b)-[:CONNECTED_TO {distance_km: 2.0, mode: 'Green Line / Walk'}]->(a);
+

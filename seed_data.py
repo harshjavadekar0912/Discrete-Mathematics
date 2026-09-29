@@ -19,6 +19,30 @@ CITIES = [
         "country": "India",
         "description": "Historical capital of India, home to Mughal monuments, ancient heritage, and vibrant bazaars.",
         "type": "City"
+    },
+    {
+        "id": "city_pune",
+        "name": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "description": "Cultural city known for Maratha history, museums, and its vibrant food scene.",
+        "type": "City"
+    },
+    {
+        "id": "city_chennai",
+        "name": "Chennai",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "description": "Coastal capital of Tamil Nadu known for temples, museums, and South Indian culture.",
+        "type": "City"
+    },
+    {
+        "id": "city_hyderabad",
+        "name": "Hyderabad",
+        "state": "Telangana",
+        "country": "India",
+        "description": "Historic city known for the Charminar, Deccan heritage, and Hyderabadi cuisine.",
+        "type": "City"
     }
 ]
 
@@ -554,7 +578,28 @@ PLACES = [
         "line": "Yellow Line",
         "price_tier": "Transit",
         "description": "Yellow Line station providing swift access to the Qutub Minar complex."
-    }
+    },
+    # ================= PUNE PLACES =================
+    {"id": "pune_shaniwar_wada", "name": "Shaniwar Wada", "city": "Pune", "category": "Monument", "area": "Shaniwar Peth", "rating": 4.5, "entry_fee": 25, "price_tier": "Budget", "description": "Historic Peshwa fortification and palace in the heart of Pune."},
+    {"id": "pune_dagdusheth", "name": "Dagdusheth Halwai Ganpati Temple", "city": "Pune", "category": "Monument", "area": "Budhwar Peth", "rating": 4.8, "entry_fee": 0, "price_tier": "Free", "description": "Famous Ganesh temple known for its ornate shrine and long-standing tradition."},
+    {"id": "pune_raja_dinkar_kelkar", "name": "Raja Dinkar Kelkar Museum", "city": "Pune", "category": "Museum", "area": "Shukrawar Peth", "rating": 4.5, "entry_fee": 100, "price_tier": "Budget", "description": "Museum displaying an extensive collection of Indian art and everyday objects."},
+    {"id": "pune_shabree", "name": "Shabree", "city": "Pune", "category": "Restaurant", "area": "Deccan Gymkhana", "rating": 4.3, "price_inr": 500, "price_tier": "Budget", "cuisine": "Maharashtrian" , "description": "Popular restaurant serving traditional Maharashtrian thalis."},
+    {"id": "pune_fern", "name": "The Fern Residency Pune", "city": "Pune", "category": "Hotel", "area": "Shivajinagar", "rating": 4.2, "price_inr": 4500, "price_tier": "Moderate", "stars": 4, "description": "Contemporary hotel with convenient access to central Pune."},
+    {"id": "pune_pmc_metro", "name": "PMC Metro Station", "city": "Pune", "category": "MetroStation", "area": "Shivajinagar", "rating": 4.3, "line": "Pune Metro Aqua Line", "price_tier": "Transit", "description": "Pune Metro station serving the central business district."},
+    # ================= CHENNAI PLACES =================
+    {"id": "chennai_marina", "name": "Marina Beach", "city": "Chennai", "category": "Monument", "area": "Marina", "rating": 4.5, "entry_fee": 0, "price_tier": "Free", "description": "Landmark urban beach along the Bay of Bengal and a popular city promenade."},
+    {"id": "chennai_kapaleeshwarar", "name": "Kapaleeshwarar Temple", "city": "Chennai", "category": "Monument", "area": "Mylapore", "rating": 4.7, "entry_fee": 0, "price_tier": "Free", "description": "Historic Dravidian-style Shiva temple in the Mylapore neighbourhood."},
+    {"id": "chennai_government_museum", "name": "Government Museum Chennai", "city": "Chennai", "category": "Museum", "area": "Egmore", "rating": 4.5, "entry_fee": 15, "price_tier": "Budget", "description": "Major museum complex with archaeology, art, and natural history collections."},
+    {"id": "chennai_murugan_idli", "name": "Murugan Idli Shop", "city": "Chennai", "category": "Restaurant", "area": "T. Nagar", "rating": 4.3, "price_inr": 350, "price_tier": "Budget", "cuisine": "South Indian", "description": "Well-known eatery serving idli, dosa, and traditional Tamil dishes."},
+    {"id": "chennai_savera", "name": "Savera Hotel", "city": "Chennai", "category": "Hotel", "area": "Mylapore", "rating": 4.2, "price_inr": 6000, "price_tier": "Moderate", "stars": 4, "description": "Established city hotel close to Chennai's central cultural districts."},
+    {"id": "chennai_egmore_metro", "name": "Egmore Metro Station", "city": "Chennai", "category": "MetroStation", "area": "Egmore", "rating": 4.3, "line": "Chennai Metro Blue Line", "price_tier": "Transit", "description": "Metro station serving Egmore railway station and nearby attractions."},
+    # ================= HYDERABAD PLACES =================
+    {"id": "hyderabad_charminar", "name": "Charminar", "city": "Hyderabad", "category": "Monument", "area": "Old City", "rating": 4.6, "entry_fee": 25, "price_tier": "Budget", "description": "Four-minaret monument and defining landmark of Hyderabad's Old City."},
+    {"id": "hyderabad_golconda", "name": "Golconda Fort", "city": "Hyderabad", "category": "Monument", "area": "Ibrahim Bagh", "rating": 4.6, "entry_fee": 25, "price_tier": "Budget", "description": "Hilltop fort complex renowned for its history and acoustic design."},
+    {"id": "hyderabad_salar_jung", "name": "Salar Jung Museum", "city": "Hyderabad", "category": "Museum", "area": "Darulshifa", "rating": 4.6, "entry_fee": 50, "price_tier": "Budget", "description": "Art museum with collections spanning India, Europe, and Asia."},
+    {"id": "hyderabad_paradise", "name": "Paradise Biryani", "city": "Hyderabad", "category": "Restaurant", "area": "Secunderabad", "rating": 4.2, "price_inr": 500, "price_tier": "Budget", "cuisine": "Hyderabadi", "description": "Popular restaurant known for Hyderabadi biryani and local dishes."},
+    {"id": "hyderabad_taj_deccan", "name": "Taj Deccan", "city": "Hyderabad", "category": "Hotel", "area": "Banjara Hills", "rating": 4.5, "price_inr": 12000, "price_tier": "Luxury", "stars": 5, "description": "Full-service hotel in the Banjara Hills neighbourhood."},
+    {"id": "hyderabad_charminar_metro", "name": "MGBS Metro Station", "city": "Hyderabad", "category": "MetroStation", "area": "Gowliguda", "rating": 4.3, "line": "Hyderabad Metro Green Line", "price_tier": "Transit", "description": "Metro station connecting the Mahatma Gandhi Bus Station and Old City."},
 ]
 
 # ================= RELATIONSHIPS =================
@@ -603,6 +648,21 @@ NEAR_RELATIONSHIPS = [
     ("delhi_national_museum", "delhi_le_meridien", 1.2),
     ("delhi_imperial_hotel", "delhi_saravana_bhavan", 0.7),
     ("delhi_india_gate", "delhi_national_museum", 1.4),
+    # --- Pune Cluster ---
+    ("pune_shaniwar_wada", "pune_dagdusheth", 0.8),
+    ("pune_shaniwar_wada", "pune_raja_dinkar_kelkar", 1.5),
+    ("pune_shaniwar_wada", "pune_shabree", 2.0),
+    ("pune_raja_dinkar_kelkar", "pune_shabree", 1.2),
+    # --- Chennai Cluster ---
+    ("chennai_marina", "chennai_kapaleeshwarar", 3.0),
+    ("chennai_marina", "chennai_savera", 4.0),
+    ("chennai_government_museum", "chennai_egmore_metro", 0.5),
+    ("chennai_government_museum", "chennai_murugan_idli", 4.0),
+    # --- Hyderabad Cluster ---
+    ("hyderabad_charminar", "hyderabad_salar_jung", 2.0),
+    ("hyderabad_charminar", "hyderabad_paradise", 6.0),
+    ("hyderabad_charminar", "hyderabad_charminar_metro", 2.5),
+    ("hyderabad_golconda", "hyderabad_taj_deccan", 8.0),
 ]
 
 CONNECTED_TO_RELATIONSHIPS = [
@@ -636,6 +696,11 @@ CONNECTED_TO_RELATIONSHIPS = [
     ("delhi_metro_lal_quila", "delhi_metro_central_sec", 4.2, "Violet Line"),
     ("delhi_metro_chandni_chowk", "delhi_metro_lal_quila", 0.9, "Heritage Walkway"),
     ("delhi_metro_central_sec", "delhi_metro_qutub_minar", 12.0, "Yellow Line"),
+    ("pune_pmc_metro", "pune_shaniwar_wada", 1.5, "Walk / Pune Metro"),
+    ("chennai_egmore_metro", "chennai_government_museum", 0.5, "Walk"),
+    ("chennai_egmore_metro", "chennai_marina", 5.0, "Blue Line / Bus"),
+    ("hyderabad_charminar_metro", "hyderabad_charminar", 2.5, "Green Line / Bus"),
+    ("hyderabad_charminar_metro", "hyderabad_salar_jung", 2.0, "Green Line / Walk"),
 ]
 
 PRICE_TIERS = [
@@ -724,7 +789,7 @@ def generate_cypher_seed_script():
     # LOCATED_IN relationships
     statements.append("// 6. Create LOCATED_IN Relations (Place -> City)")
     for p in PLACES:
-        city_id = "city_mumbai" if p["city"] == "Mumbai" else "city_delhi"
+        city_id = next(city["id"] for city in CITIES if city["name"] == p["city"])
         stmt = f"MATCH (p:Place {{id: '{p['id']}'}}), (c:City {{id: '{city_id}'}}) CREATE (p)-[:LOCATED_IN]->(c);"
         statements.append(stmt)
     statements.append("")

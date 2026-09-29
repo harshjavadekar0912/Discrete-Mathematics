@@ -9,6 +9,7 @@ from typing import Dict, List, Any, Optional, Tuple
 import requests
 
 from graph_db import kg_service
+import seed_data
 
 
 # Pre-defined landmark names for entity extraction
@@ -46,9 +47,10 @@ def extract_landmark(text: str) -> Optional[str]:
 def extract_city(text: str) -> Optional[str]:
     """Extracts target city."""
     text_lower = text.lower()
-    if "delhi" in text_lower:
-        return "Delhi"
-    if "mumbai" in text_lower or "bombay" in text_lower:
+    for city in seed_data.CITIES:
+        if city["name"].lower() in text_lower:
+            return city["name"]
+    if "bombay" in text_lower:
         return "Mumbai"
     return None
 
