@@ -39,8 +39,15 @@ class KnowledgeGraphService:
         self.edges = []
         
         # LOCATED_IN
+        city_map = {
+            "Mumbai": "city_mumbai",
+            "Delhi": "city_delhi",
+            "Pune": "city_pune",
+            "Chennai": "city_chennai",
+            "Hyderabad": "city_hyderabad"
+        }
         for p in seed_data.PLACES:
-            city_id = next(city["id"] for city in seed_data.CITIES if city["name"] == p["city"])
+            city_id = city_map.get(p["city"], f"city_{p['city'].lower()}")
             self.edges.append({
                 "source": p["id"],
                 "target": city_id,

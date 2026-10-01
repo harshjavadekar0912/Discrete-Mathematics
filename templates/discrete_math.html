@@ -116,17 +116,23 @@
             </optgroup>
             <optgroup label="Pune Transit & Places">
               {% for p in places if p.city == 'Pune' %}
-                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+                <option value="{{ p.id }}">
+                  {{ p.name }} ({{ p.category }})
+                </option>
               {% endfor %}
             </optgroup>
             <optgroup label="Chennai Transit & Places">
               {% for p in places if p.city == 'Chennai' %}
-                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+                <option value="{{ p.id }}">
+                  {{ p.name }} ({{ p.category }})
+                </option>
               {% endfor %}
             </optgroup>
             <optgroup label="Hyderabad Transit & Places">
               {% for p in places if p.city == 'Hyderabad' %}
-                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+                <option value="{{ p.id }}">
+                  {{ p.name }} ({{ p.category }})
+                </option>
               {% endfor %}
             </optgroup>
           </select>
@@ -151,17 +157,23 @@
             </optgroup>
             <optgroup label="Pune Transit & Places">
               {% for p in places if p.city == 'Pune' %}
-                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+                <option value="{{ p.id }}" {% if p.id == 'pune_shaniwar_wada' %}selected{% endif %}>
+                  {{ p.name }} ({{ p.category }})
+                </option>
               {% endfor %}
             </optgroup>
             <optgroup label="Chennai Transit & Places">
               {% for p in places if p.city == 'Chennai' %}
-                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+                <option value="{{ p.id }}" {% if p.id == 'chennai_marina_beach' %}selected{% endif %}>
+                  {{ p.name }} ({{ p.category }})
+                </option>
               {% endfor %}
             </optgroup>
             <optgroup label="Hyderabad Transit & Places">
               {% for p in places if p.city == 'Hyderabad' %}
-                <option value="{{ p.id }}">{{ p.name }} ({{ p.category }})</option>
+                <option value="{{ p.id }}" {% if p.id == 'hyd_charminar' %}selected{% endif %}>
+                  {{ p.name }} ({{ p.category }})
+                </option>
               {% endfor %}
             </optgroup>
           </select>
@@ -219,7 +231,7 @@
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">City</label>
             <select id="setACity" class="form-select">
-              <option value="">All Cities</option>
+              <option value="">All 5 Cities</option>
               <option value="Mumbai">Mumbai Only</option>
               <option value="Delhi">Delhi Only</option>
               <option value="Pune">Pune Only</option>
@@ -256,7 +268,7 @@
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">City</label>
             <select id="setBCity" class="form-select">
-              <option value="">All Cities</option>
+              <option value="">All 5 Cities</option>
               <option value="Mumbai">Mumbai Only</option>
               <option value="Delhi">Delhi Only</option>
               <option value="Pune">Pune Only</option>

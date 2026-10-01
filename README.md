@@ -7,7 +7,7 @@
 
 ## 🌟 Project Overview
 
-The **Tourist Guide Knowledge Graph Chatbot** is a complete, modern web application that helps tourists discover attractions, hotels, dining, and transit options across **Mumbai** and **Delhi**.
+The **Tourist Guide Knowledge Graph Chatbot** is a complete, modern web application that helps tourists discover attractions, hotels, dining, and transit options across **5 major Indian cities: Mumbai, Delhi, Pune, Chennai, and Hyderabad**.
 
 The application models the tourist domain as an interconnected **Knowledge Graph** $G = (V, E)$ stored in Neo4j, converts natural-language queries into Cypher queries, executes them, and returns structured recommendations alongside mathematical explanations.
 
@@ -18,13 +18,13 @@ The application models the tourist domain as an interconnected **Knowledge Graph
 This project is explicitly structured around core Discrete Mathematics concepts:
 
 ### 1. Graph Theory ($G = (V, E)$)
-* **Vertices ($V$):** Categorized tourist entities:
-  * `City` (Mumbai, Delhi)
-  * `Monument` (Gateway of India, Red Fort, Qutub Minar, etc.)
-  * `Museum` (CSMVS Museum, National Museum, NGMA, etc.)
-  * `Hotel` (The Taj Mahal Palace, Haveli Dharampura, Hotel Tara Palace, etc.)
-  * `Restaurant` (Karim's, Bademiya, Leopold Cafe, Saravana Bhavan, etc.)
-  * `MetroStation` (CSMT, Colaba Metro, Lal Quila, Chandni Chowk, etc.)
+* **Vertices ($V$):** Categorized tourist entities (91+ vertices):
+  * `City` (Mumbai, Delhi, Pune, Chennai, Hyderabad)
+  * `Monument` (Gateway of India, Red Fort, Shaniwar Wada, Marina Beach, Charminar, Golconda Fort, etc.)
+  * `Museum` (CSMVS Museum, National Museum, Kelkar Museum, Government Museum Chennai, Salar Jung Museum, etc.)
+  * `Hotel` (The Taj Mahal Palace, Haveli Dharampura, The Ritz-Carlton Pune, Taj Coromandel, Taj Falaknuma Palace, etc.)
+  * `Restaurant` (Karim's, Bademiya, Vaishali, Murugan Idli Shop, Paradise Biryani, Hotel Shadab, etc.)
+  * `MetroStation` (CSMT, Lal Quila, Civil Court Metro, Chennai Central, Charminar Metro, MGBS, etc.)
 * **Edges ($E$):** Labeled, directed, and undirected relationships:
   * `LOCATED_IN`: Directed hierarchical relationship $(p) \to (c)$.
   * `NEAR`: Undirected/Symmetric spatial proximity weighted by distance in kilometers.

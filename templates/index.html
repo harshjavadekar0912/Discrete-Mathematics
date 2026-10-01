@@ -11,7 +11,7 @@
     Tourist Guide <span>Knowledge Graph Chatbot</span>
   </h1>
   <p class="hero-desc">
-    Ask natural-language tourist questions about attractions, restaurants, hotels, and metro stations in <strong>Mumbai, Delhi, Pune, Chennai, and Hyderabad</strong>. Every query is converted to Cypher and grounded in Graph Theory.
+    Ask natural-language tourist questions about attractions, restaurants, hotels, and metro stations across <strong>Mumbai, Delhi, Pune, Chennai, and Hyderabad</strong>. Every query is converted to Cypher and grounded in Graph Theory.
   </p>
 </section>
 
@@ -43,7 +43,7 @@
           type="text" 
           id="chatInput" 
           class="chat-input" 
-          placeholder="Ask a question (e.g. 'Which restaurants are near Gateway of India?')..."
+          placeholder="Ask a question (e.g. 'Which restaurants are near Charminar?')..."
           autocomplete="off"
           required
         >
@@ -59,36 +59,41 @@
   <aside class="chat-sidebar">
     <div class="sidebar-panel">
       <div class="panel-title">
-        <span>💡</span> Sample Queries
+        <span>💡</span> Sample Queries (5 Cities)
       </div>
       <div class="query-chips">
         <button class="chip-btn" data-query="Which restaurants are near Gateway of India?">
-          <span class="chip-badge">Graph 1-Hop Proximity</span>
+          <span class="chip-badge">Mumbai • Proximity</span>
           <div>Which restaurants are near Gateway of India?</div>
         </button>
 
         <button class="chip-btn" data-query="Find hotels near Red Fort.">
-          <span class="chip-badge">Symmetric Relation (NEAR)</span>
+          <span class="chip-badge">Delhi • Symmetric Relation</span>
           <div>Find hotels near Red Fort.</div>
         </button>
 
-        <button class="chip-btn" data-query="Show museums in Mumbai.">
-          <span class="chip-badge">Hierarchical Relation (LOCATED_IN)</span>
-          <div>Show museums in Mumbai.</div>
+        <button class="chip-btn" data-query="Find restaurants near Shaniwar Wada.">
+          <span class="chip-badge">Pune • Proximity Relation</span>
+          <div>Find restaurants near Shaniwar Wada.</div>
         </button>
 
-        <button class="chip-btn" data-query="How can I reach Gateway of India from the nearest station?">
-          <span class="chip-badge">Transit Shortest Path</span>
-          <div>How can I reach Gateway of India from the nearest station?</div>
+        <button class="chip-btn" data-query="Show museums in Chennai.">
+          <span class="chip-badge">Chennai • Hierarchical LOCATED_IN</span>
+          <div>Show museums in Chennai.</div>
         </button>
 
-        <button class="chip-btn" data-query="Find the cheapest hotel near Red Fort.">
-          <span class="chip-badge">Greedy Min-Cost Optimization</span>
-          <div>Find the cheapest hotel near Red Fort.</div>
+        <button class="chip-btn" data-query="Find hotels near Charminar.">
+          <span class="chip-badge">Hyderabad • Neighborhood</span>
+          <div>Find hotels near Charminar.</div>
+        </button>
+
+        <button class="chip-btn" data-query="How can I reach Charminar from the nearest station?">
+          <span class="chip-badge">Hyderabad • Shortest Route</span>
+          <div>How can I reach Charminar from the nearest station?</div>
         </button>
 
         <button class="chip-btn" data-query="Show museums and monuments.">
-          <span class="chip-badge">Set Theory (A ∪ B Union)</span>
+          <span class="chip-badge">Set Theory • A ∪ B Union</span>
           <div>Show museums and monuments.</div>
         </button>
       </div>
@@ -108,8 +113,8 @@
         <span class="metric-value">{{ total_edges }} Edges</span>
       </div>
       <div class="metric-row">
-        <span class="metric-label">Target Cities</span>
-        <span class="metric-value">5 Cities</span>
+        <span class="metric-label">5 Target Cities</span>
+        <span class="metric-value" style="font-size: 0.72rem; color: #38bdf8;">Mumbai, Delhi, Pune, Chennai, Hyderabad</span>
       </div>
       <div class="metric-row">
         <span class="metric-label">Relation Types</span>

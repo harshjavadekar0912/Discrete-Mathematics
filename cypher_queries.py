@@ -9,11 +9,11 @@ from typing import Dict, List, Any, Optional, Tuple
 import requests
 
 from graph_db import kg_service
-import seed_data
 
 
 # Pre-defined landmark names for entity extraction
 KNOWN_LANDMARKS = [
+    # Mumbai
     ("Gateway of India", ["gateway of india", "gateway", "gateway monument"]),
     ("Red Fort", ["red fort", "lal quila", "lal qila"]),
     ("Marine Drive", ["marine drive", "queen's necklace"]),
@@ -30,7 +30,46 @@ KNOWN_LANDMARKS = [
     ("Churchgate Station", ["churchgate", "churchgate station"]),
     ("Jama Masjid", ["jama masjid"]),
     ("Chandni Chowk Metro Station", ["chandni chowk metro", "chandni chowk station"]),
-    ("Lal Quila Metro Station", ["lal quila metro", "lal quila station"])
+    ("Lal Quila Metro Station", ["lal quila metro", "lal quila station"]),
+
+    # Pune
+    ("Shaniwar Wada", ["shaniwar wada", "shaniwarwada", "shanivar wada"]),
+    ("Aga Khan Palace", ["aga khan palace", "agakhan palace", "aga khan"]),
+    ("Sinhagad Fort", ["sinhagad fort", "sinhagad", "sinhgarh"]),
+    ("Raja Dinkar Kelkar Museum", ["kelkar museum", "raja dinkar kelkar", "kelkar"]),
+    ("Tribal Cultural Museum", ["tribal museum", "tribal cultural museum"]),
+    ("Vaishali Restaurant", ["vaishali", "vaishali restaurant", "vaishali fc road"]),
+    ("Kayani Bakery", ["kayani bakery", "kayani"]),
+    ("German Bakery", ["german bakery"]),
+    ("Civil Court Metro Station", ["civil court metro", "civil court station"]),
+    ("Deccan Gymkhana Metro Station", ["deccan gymkhana metro", "deccan metro"]),
+
+    # Chennai
+    ("Marina Beach", ["marina beach", "marina"]),
+    ("Kapaleeshwarar Temple", ["kapaleeshwarar", "kapaleeswarar temple", "kapaleeswarar", "mylapore temple"]),
+    ("Fort St. George", ["fort st george", "fort st. george", "st george fort"]),
+    ("San Thome Cathedral Basilica", ["san thome", "santhome", "san thome church"]),
+    ("Government Museum Chennai", ["government museum", "egmore museum", "chennai museum"]),
+    ("Fort St. George Museum", ["fort museum"]),
+    ("Taj Coromandel", ["taj coromandel"]),
+    ("Murugan Idli Shop", ["murugan idli", "murugan idli shop"]),
+    ("Buhari Hotel", ["buhari", "buhari hotel"]),
+    ("Chennai Central Metro Station", ["chennai central metro", "chennai central"]),
+    ("High Court Metro Station", ["high court metro", "high court station"]),
+
+    # Hyderabad
+    ("Charminar", ["charminar", "char minar"]),
+    ("Golconda Fort", ["golconda fort", "golconda", "golkonda"]),
+    ("Chowmahalla Palace", ["chowmahalla palace", "chowmahalla", "chowmohalla"]),
+    ("Qutb Shahi Tombs", ["qutb shahi tombs", "qutub shahi tombs"]),
+    ("Salar Jung Museum", ["salar jung museum", "salar jung", "salarjung"]),
+    ("The Nizam's Museum", ["nizam museum", "nizam's museum"]),
+    ("Taj Falaknuma Palace", ["falaknuma palace", "taj falaknuma", "falaknuma"]),
+    ("Paradise Biryani", ["paradise biryani", "paradise"]),
+    ("Hotel Shadab", ["hotel shadab", "shadab restaurant", "shadab"]),
+    ("Bawarchi Restaurant", ["bawarchi", "bawarchi restaurant"]),
+    ("MGBS Metro Interchange", ["mgbs metro", "mgbs station", "mgbs"]),
+    ("Charminar Metro Station", ["charminar metro station", "charminar metro"])
 ]
 
 
@@ -47,11 +86,16 @@ def extract_landmark(text: str) -> Optional[str]:
 def extract_city(text: str) -> Optional[str]:
     """Extracts target city."""
     text_lower = text.lower()
-    for city in seed_data.CITIES:
-        if city["name"].lower() in text_lower:
-            return city["name"]
-    if "bombay" in text_lower:
+    if "delhi" in text_lower:
+        return "Delhi"
+    if "mumbai" in text_lower or "bombay" in text_lower:
         return "Mumbai"
+    if "pune" in text_lower or "poona" in text_lower:
+        return "Pune"
+    if "chennai" in text_lower or "madras" in text_lower:
+        return "Chennai"
+    if "hyderabad" in text_lower or "secunderabad" in text_lower:
+        return "Hyderabad"
     return None
 
 
