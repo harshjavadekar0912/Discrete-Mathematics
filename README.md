@@ -12,7 +12,7 @@ A conversational chatbot that helps tourists find attractions, restaurants, hote
 |-----------|-------------------------------------------------------------------|
 | Frontend  | HTML, CSS, JavaScript (Vanilla)                                   |
 | Backend   | Python + Flask                                                    |
-| Map UI    | [Leaflet.js](https://leafletjs.com/) + CartoDB Dark Matter tiles  |
+| Map UI    | [Leaflet.js](https://leafletjs.com/) + OpenStreetMap tiles       |
 | Geocoding | [Nominatim](https://nominatim.openstreetmap.org/) (OpenStreetMap) |
 | Search    | [Overpass API](https://overpass-api.de/) (OSM POI data)           |
 | Routing   | [OSRM](http://router.project-osrm.org/) (open-source routing)    |
@@ -103,8 +103,6 @@ Discrete Mathematics/
 ## OSM Attribution
 
 This project uses data from **OpenStreetMap** (© OpenStreetMap contributors), licensed under the [Open Database Licence (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/).
-
-Map tiles are provided by **CARTO** under the [CartoDB attribution](https://carto.com/attributions).
 
 Routing is provided by **OSRM** (the Open Source Routing Machine).
 
