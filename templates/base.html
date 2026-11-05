@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Tourist Guide Assistant{% endblock %} | Tourist Guide Assistant</title>
-  <meta name="description" content="AI Tourist Guide powered by Google Maps Platform — find attractions, restaurants, hotels and directions across India.">
+  <meta name="description" content="Tourist Guide Assistant — find attractions, restaurants, hotels and directions across India using OpenStreetMap.">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
   {% block extra_head %}{% endblock %}
@@ -17,7 +17,7 @@
       <div class="brand-icon">🗺️</div>
       <div>
         <div class="brand-title">Tourist Guide Assistant</div>
-        <div class="brand-subtitle">Powered by Google Maps Platform</div>
+        <div class="brand-subtitle">Powered by OpenStreetMap</div>
       </div>
     </a>
 
@@ -34,15 +34,15 @@
       </li>
       <li>
         <a href="/explore" class="nav-link {% if page == 'places' %}active{% endif %}">
-          <span>📍</span> Explore
+          <span>🔍</span> Explore
         </a>
       </li>
     </ul>
 
     <div class="nav-actions">
-      <div class="status-badge maps-powered" title="Powered by Google Maps Platform">
+      <div class="status-badge maps-powered" title="Powered by OpenStreetMap — Free & Open Data">
         <span class="status-dot"></span>
-        <span>Google Maps</span>
+        <span>OpenStreetMap</span>
       </div>
     </div>
   </nav>

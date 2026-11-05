@@ -1,77 +1,72 @@
 /**
  * Tourist Guide Assistant - Interactive Map Page
- * Powered by Google Maps JavaScript API
+ * Powered by Leaflet + OpenStreetMap (CartoDB Dark Matter tiles)
  */
 
 let map = null;
-let markers = [];
-let infoWindow = null;
+const markers = [];
 
-// City centers for India
+// City centers matching osm_service.py CITY_CENTERS
 const CITY_CENTERS = {
-  mumbai:    { lat: 18.9388, lng: 72.8354 },
-  delhi:     { lat: 28.6448, lng: 77.2167 },
-  pune:      { lat: 18.5204, lng: 73.8567 },
-  chennai:   { lat: 13.0827, lng: 80.2707 },
-  hyderabad: { lat: 17.3850, lng: 78.4867 },
+  mumbai:    [18.9388, 72.8354],
+  delhi:     [28.6448, 77.2167],
+  pune:      [18.5204, 73.8567],
+  chennai:   [13.0827, 80.2707],
+  hyderabad: [17.3850, 78.4867],
 };
 
-// Called by Maps JS API loader callback
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 20.5937, lng: 78.9629 }, // Center of India
-    zoom: 5,
-    styles: [
-      { elementType: 'geometry', stylers: [{ color: '#0a0f1d' }] },
-      { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
-      { elementType: 'labels.text.stroke', stylers: [{ color: '#0a0f1d' }] },
-      { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
-      { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f172a' }] },
-      { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#0f172a' }] },
-    ],
-    disableDefaultUI: false,
+// Custom cyan divIcon to match dark UI theme
+function makeDivIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width: 16px; height: 16px;
+      background: #38bdf8;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(56,189,248,0.7);
+    "></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+    popupAnchor: [0, -10],
   });
-  infoWindow = new google.maps.InfoWindow();
+}
+
+function initMap() {
+  map = L.map('map').setView([20.5937, 78.9629], 5);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20,
+  }).addTo(map);
 }
 
 function clearMarkers() {
-  markers.forEach(m => m.setMap(null));
-  markers = [];
+  markers.forEach(m => map && map.removeLayer(m));
+  markers.length = 0;
 }
 
 function addMarker(place) {
   if (!place.lat || !place.lng || !map) return;
-  const marker = new google.maps.Marker({
-    position: { lat: place.lat, lng: place.lng },
-    map: map,
-    title: place.name,
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 10,
-      fillColor: '#38bdf8',
-      fillOpacity: 0.9,
-      strokeColor: '#fff',
-      strokeWeight: 2,
-    }
-  });
 
-  marker.addListener('click', () => {
-    const rating = place.rating ? `⭐ ${place.rating}` : '';
-    const hours = place.opening_hours ? `🕐 ${place.opening_hours}` : '';
-    const mapsLink = place.maps_uri
-      ? `<br><a href="${place.maps_uri}" target="_blank" style="color:#38bdf8;">Open in Google Maps ↗</a>`
-      : '';
+  const osmLink = place.osm_url
+    ? `<br><a href="${place.osm_url}" target="_blank" style="color:#38bdf8; font-size:12px;">View on OpenStreetMap ↗</a>`
+    : '';
+  const hours = place.opening_hours ? `<br><span style="font-size:11px; color:#94a3b8;">🕐 ${place.opening_hours}</span>` : '';
+  const phone = place.phone ? `<br><span style="font-size:11px; color:#94a3b8;">📞 ${place.phone}</span>` : '';
 
-    infoWindow.setContent(`
-      <div style="font-family: Inter, sans-serif; padding: 4px;">
-        <strong style="font-size:14px;">${place.name}</strong><br>
-        <span style="font-size:12px; color:#555;">${place.address || ''}</span><br>
-        <span style="font-size:12px;">${rating} ${hours}</span>
-        ${mapsLink}
-      </div>
-    `);
-    infoWindow.open(map, marker);
-  });
+  const popup = L.popup({ maxWidth: 260 }).setContent(`
+    <div style="font-family: Inter, sans-serif; padding: 4px;">
+      <strong style="font-size:14px; color:#0f172a;">${escapeHtml(place.name || 'Unknown')}</strong><br>
+      <span style="font-size:12px; color:#475569;">${escapeHtml(place.address || '')}</span>
+      ${hours}${phone}${osmLink}
+    </div>
+  `);
+
+  const marker = L.marker([place.lat, place.lng], { icon: makeDivIcon() })
+    .bindPopup(popup)
+    .addTo(map);
 
   markers.push(marker);
 }
@@ -86,19 +81,17 @@ function renderResults(places) {
   resultsDiv.innerHTML = places.map(p => {
     const cat = p.category || 'Place';
     const badgeClass = `badge-${cat.toLowerCase()}`;
-    const rating = p.rating ? `⭐ ${p.rating}` : '';
-    const mapsLink = p.maps_uri
-      ? `<a href="${p.maps_uri}" target="_blank" rel="noopener" style="font-size:0.72rem; color:#38bdf8; text-decoration:none;">Open Maps ↗</a>`
+    const osmLink = p.osm_url
+      ? `<a href="${escapeHtml(p.osm_url)}" target="_blank" rel="noopener" style="font-size:0.72rem; color:#38bdf8; text-decoration:none;">OSM ↗</a>`
       : '';
 
     return `
       <div class="place-card" style="margin-bottom:0.75rem; cursor:pointer;" onclick="focusPlace(${p.lat || 'null'}, ${p.lng || 'null'})">
-        <span class="place-badge ${badgeClass}">${cat}</span>
-        <div class="place-title" style="font-size:0.95rem;">${p.name}</div>
-        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">${p.address || ''}</div>
+        <span class="place-badge ${badgeClass}">${escapeHtml(cat)}</span>
+        <div class="place-title" style="font-size:0.95rem;">${escapeHtml(p.name || '')}</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">${escapeHtml(p.address || '')}</div>
         <div style="font-size:0.8rem; margin-top:0.3rem; display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-          <span style="color:#fbbf24;">${rating}</span>
-          ${mapsLink}
+          ${osmLink}
         </div>
       </div>
     `;
@@ -107,11 +100,13 @@ function renderResults(places) {
 
 function focusPlace(lat, lng) {
   if (!map || !lat || !lng) return;
-  map.setCenter({ lat, lng });
-  map.setZoom(16);
+  map.setView([lat, lng], 16);
 }
 
 async function searchPlaces(query) {
+  const resultsDiv = document.getElementById('mapResults');
+  resultsDiv.innerHTML = `<p style="color:var(--text-muted); font-size:0.88rem; text-align:center; padding:2rem 0;">⏳ Searching OpenStreetMap...</p>`;
+
   try {
     const res = await fetch(`/api/places/search?query=${encodeURIComponent(query)}`);
     const data = await res.json();
@@ -121,22 +116,56 @@ async function searchPlaces(query) {
     renderResults(places);
     places.forEach(addMarker);
 
-    // Fit map bounds
+    // Fit map to result bounds
     if (places.length > 0 && map) {
-      const bounds = new google.maps.LatLngBounds();
-      places.forEach(p => {
-        if (p.lat && p.lng) bounds.extend({ lat: p.lat, lng: p.lng });
-      });
-      if (!bounds.isEmpty()) map.fitBounds(bounds);
+      const validPlaces = places.filter(p => p.lat && p.lng);
+      if (validPlaces.length > 0) {
+        const bounds = L.latLngBounds(validPlaces.map(p => [p.lat, p.lng]));
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      }
     }
   } catch (err) {
-    document.getElementById('mapResults').innerHTML =
-      `<p style="color:#f87171; font-size:0.88rem;">Error: ${err.message}</p>`;
+    if (resultsDiv) resultsDiv.innerHTML = `<p style="color:#f87171; font-size:0.88rem;">Error: ${escapeHtml(err.message)}</p>`;
   }
 }
 
-// DOM event binding (runs before Maps API is loaded)
+async function searchCity(cityKey) {
+  const center = CITY_CENTERS[cityKey];
+  if (!center || !map) return;
+  map.setView(center, 12);
+
+  const resultsDiv = document.getElementById('mapResults');
+  resultsDiv.innerHTML = `<p style="color:var(--text-muted); font-size:0.88rem; text-align:center; padding:2rem 0;">⏳ Loading OpenStreetMap data...</p>`;
+
+  try {
+    const res = await fetch(`/api/places/citytype?city=${encodeURIComponent(cityKey)}&type=tourist_attraction`);
+    const data = await res.json();
+    const places = data.places || [];
+
+    clearMarkers();
+    renderResults(places);
+    places.forEach(addMarker);
+  } catch (err) {
+    if (resultsDiv) resultsDiv.innerHTML = `<p style="color:#f87171; font-size:0.88rem;">Error: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// DOM event binding
 document.addEventListener('DOMContentLoaded', () => {
+  // Init Leaflet map
+  if (document.getElementById('map')) {
+    initMap();
+  }
+
   const searchBtn = document.getElementById('mapSearchBtn');
   const searchInput = document.getElementById('mapSearchInput');
   const cityBtns = document.querySelectorAll('.city-btn');
@@ -161,14 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.classList.add('active');
         const cityKey = btn.getAttribute('data-city');
         if (cityKey && CITY_CENTERS[cityKey]) {
-          if (map) {
-            map.setCenter(CITY_CENTERS[cityKey]);
-            map.setZoom(12);
-          }
-          searchPlaces(`tourist attractions in ${cityKey} India`);
+          searchCity(cityKey);
         } else if (!cityKey && map) {
-          map.setCenter({ lat: 20.5937, lng: 78.9629 });
-          map.setZoom(5);
+          map.setView([20.5937, 78.9629], 5);
           clearMarkers();
           document.getElementById('mapResults').innerHTML =
             `<p style="color:var(--text-muted); font-size:0.88rem; text-align:center; padding:2rem 0;">Select a city or search to see results.</p>`;

@@ -5,13 +5,13 @@
 {% block content %}
 <section class="hero-header">
   <div class="hero-pill">
-    <span>🗺️</span> Powered by Google Maps Platform
+    <span>🗺️</span> Powered by OpenStreetMap
   </div>
   <h1 class="hero-title">
     Tourist Guide <span>Assistant</span>
   </h1>
   <p class="hero-desc">
-    Ask natural-language questions about tourist attractions, restaurants, hotels, and directions across <strong>Mumbai, Delhi, Pune, Chennai, and Hyderabad</strong>. All results come from Google Maps in real time.
+    Ask natural-language questions about tourist attractions, restaurants, hotels, and directions across <strong>Mumbai, Delhi, Pune, Chennai, and Hyderabad</strong>. All results come from OpenStreetMap — free, open data, no API key required.
   </p>
 </section>
 
@@ -27,7 +27,7 @@
             Hello traveler! 👋 I am your <strong>Tourist Guide Assistant</strong>.
           </p>
           <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.88rem;">
-            I use <strong>Google Maps Platform</strong> to find real-time information about attractions, restaurants, hotels, and transit stations across <strong>Mumbai, Delhi, Pune, Chennai, and Hyderabad</strong>.
+            I use <strong>OpenStreetMap</strong> (Nominatim · Overpass API · OSRM) to find real-time information about attractions, restaurants, hotels, and transit stations across <strong>Mumbai, Delhi, Pune, Chennai, and Hyderabad</strong>.
           </p>
           <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #38bdf8;">
             Try one of the sample queries on the right, or type your own question below!
@@ -82,9 +82,9 @@
           <div>Find museums in Chennai.</div>
         </button>
 
-        <button class="chip-btn" data-query="Show highly rated restaurants in Hyderabad.">
+        <button class="chip-btn" data-query="Show restaurants in Hyderabad.">
           <span class="chip-badge">Hyderabad • Dining</span>
-          <div>Show highly rated restaurants in Hyderabad.</div>
+          <div>Show restaurants in Hyderabad.</div>
         </button>
 
         <button class="chip-btn" data-query="Directions from Shaniwar Wada to Aga Khan Palace.">
@@ -106,7 +106,7 @@
       </div>
       <div class="metric-row">
         <span class="metric-label">Data Source</span>
-        <span class="metric-value" style="font-size: 0.8rem; color: #34d399;">Google Maps Live</span>
+        <span class="metric-value" style="font-size: 0.8rem; color: #34d399;">OpenStreetMap</span>
       </div>
       <div class="metric-row">
         <span class="metric-label">Coverage</span>
@@ -114,7 +114,7 @@
       </div>
       <div class="metric-row">
         <span class="metric-label">APIs Used</span>
-        <span class="metric-value" style="font-size: 0.72rem; color: #a78bfa;">Places, Routes, Maps JS</span>
+        <span class="metric-value" style="font-size: 0.72rem; color: #a78bfa;">Nominatim · Overpass · OSRM</span>
       </div>
 
       <div style="margin-top: 1rem;">

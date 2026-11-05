@@ -1,174 +1,127 @@
 # 🗺️ Tourist Guide Assistant
 
-A conversational AI chatbot that helps tourists explore **Mumbai, Delhi, Pune, Chennai, and Hyderabad** using **Google Maps Platform** as the exclusive real-time data source.
+A conversational chatbot that helps tourists find attractions, restaurants, hotels, and transit stations across five major Indian cities — **Mumbai, Delhi, Pune, Chennai, and Hyderabad** — using **100% free, open-source location services**.
+
+> ✅ **No API keys required. No billing account. No Google Cloud.**
 
 ---
 
-## ✨ Features
+## Tech Stack
 
-- 💬 **Chatbot** — Ask natural-language questions; get real Google Maps results
-- 🗺️ **Interactive Map** — Browse and search places on a live Google Map
-- 📍 **Explore** — Browse attractions, restaurants, hotels and transit by city & category
-- 🔍 **Real-Time Data** — All results fetched live from Google Maps APIs (no hardcoded data)
-- 🔒 **Secure Keys** — API key stored in `.env`, never exposed to the client
-
----
-
-## 🏗️ Tech Stack
-
-| Layer     | Technology                              |
-|-----------|-----------------------------------------|
-| Frontend  | HTML, CSS, JavaScript                   |
-| Backend   | Python 3.11+, Flask 3.x                 |
-| Data      | Google Maps Platform (Places & Routes)  |
-| Map Embed | Google Maps JavaScript API              |
-
-### Google Maps APIs Used
-
-| API | Purpose |
-|-----|---------|
-| **Places API (New)** — `searchText` | Chatbot & Explorer search |
-| **Places API (New)** — `searchNearby` | Nearby places search |
-| **Routes API** — `computeRoutes` | Directions & travel time |
-| **Maps JavaScript API** | Interactive map page |
+| Layer     | Technology                                                        |
+|-----------|-------------------------------------------------------------------|
+| Frontend  | HTML, CSS, JavaScript (Vanilla)                                   |
+| Backend   | Python + Flask                                                    |
+| Map UI    | [Leaflet.js](https://leafletjs.com/) + CartoDB Dark Matter tiles  |
+| Geocoding | [Nominatim](https://nominatim.openstreetmap.org/) (OpenStreetMap) |
+| Search    | [Overpass API](https://overpass-api.de/) (OSM POI data)           |
+| Routing   | [OSRM](http://router.project-osrm.org/) (open-source routing)    |
 
 ---
 
-## 🚀 Quick Setup
+## Features
+
+- 💬 **Natural-language chatbot** — ask about restaurants, hotels, monuments, museums, metro stations
+- 🗺️ **Interactive Leaflet map** — dark-themed map with clickable place markers
+- 🔍 **Place Explorer** — browse places by city and category
+- 🛣️ **Turn-by-turn directions** — OSRM routing with step-by-step instructions
+- 📍 **OpenStreetMap links** — every result links back to its OSM page
+- 🏙️ **5 cities covered** — Mumbai, Delhi, Pune, Chennai, Hyderabad
+
+---
+
+## Setup Instructions
 
 ### 1. Prerequisites
 
-- Python 3.11+ installed
-- A Google Cloud account with billing enabled
-- pip or virtualenv
+- Python 3.9+
+- Internet connection (all data is fetched live from OSM services)
 
-### 2. Get Your Google Maps API Key
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or use an existing one)
-3. Enable these APIs:
-   - **Maps JavaScript API**
-   - **Places API (New)**
-   - **Routes API**
-4. Go to **Credentials** → **Create Credentials** → **API Key**
-5. Copy your API key
-
-### 3. Configure Environment
+### 2. Install Dependencies
 
 ```bash
-# Copy the example env file
-cp .env.example .env
-
-# Edit .env and paste your key
-# GOOGLE_MAPS_API_KEY=AIzaSy...your_key_here...
-```
-
-### 4. Install Dependencies
-
-```bash
-# Create a virtual environment (recommended)
-python -m venv venv
-
-# Activate it
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install packages
+cd "Discrete Mathematics"
 pip install -r requirements.txt
 ```
 
-### 5. Run the App
+### 3. Environment (Optional)
+
+No API key is required. You can optionally create a `.env` file for Flask settings:
+
+```bash
+cp .env.example .env
+```
+
+### 4. Run the Server
 
 ```bash
 python app.py
 ```
 
-Open **http://localhost:5000** in your browser.
+The app starts at **http://localhost:5000**
 
 ---
 
-## 💬 Sample Chatbot Queries
-
-| Query | What it does |
-|-------|-------------|
-| `Find tourist attractions near Pune.` | Searches Places API for attractions in Pune |
-| `Show restaurants near Gateway of India.` | Nearby restaurant search |
-| `Find hotels near Red Fort.` | Hotel search around Red Fort, Delhi |
-| `Find museums in Chennai.` | Museum search in Chennai |
-| `Show highly rated restaurants in Hyderabad.` | Restaurant search in Hyderabad |
-| `Directions from Shaniwar Wada to Aga Khan Palace.` | Routes API directions |
-| `Find hotels near Charminar.` | Hotel search near Charminar, Hyderabad |
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
-tourist-guide/
-├── app.py                  # Flask app — all routes & API endpoints
-├── google_maps_service.py  # Google Maps API service layer
-├── intent_parser.py        # Natural language intent parser
+Discrete Mathematics/
+├── app.py                  ← Flask backend (all routes)
+├── osm_service.py          ← Nominatim, Overpass API, OSRM wrappers
+├── intent_parser.py        ← Natural-language intent detection
 ├── requirements.txt
-├── .env                    # Your secrets (never commit!)
-├── .env.example            # Template for .env
+├── .env.example
 ├── .gitignore
 ├── templates/
-│   ├── base.html           # Navbar, layout
-│   ├── index.html          # Chatbot page
-│   ├── map.html            # Interactive map page
-│   └── explorer.html       # Places explorer page
+│   ├── base.html           ← Shared navbar & layout
+│   ├── index.html          ← Chatbot page
+│   ├── map.html            ← Leaflet interactive map
+│   └── explorer.html       ← Place browser grid
 └── static/
-    ├── css/style.css       # Dark glassmorphic design
+    ├── css/style.css       ← Dark glassmorphic theme
     └── js/
-        ├── chat.js         # Chatbot UI logic
-        ├── map.js          # Google Maps JS integration
-        └── explorer.js     # Places explorer UI
+        ├── chat.js         ← Chatbot UI logic
+        ├── map.js          ← Leaflet map + markers
+        └── explorer.js     ← Place explorer grid
 ```
 
 ---
 
-## 🔌 REST API Endpoints
+## Chatbot Examples
 
-| Method | Route | Description |
-|--------|-------|-------------|
-| `GET` | `/` | Chatbot page |
-| `GET` | `/map` | Interactive map page |
-| `GET` | `/explore` | Places explorer page |
-| `POST` | `/api/chat` | Main chatbot endpoint |
-| `GET/POST` | `/api/places/search` | Places text search |
-| `POST` | `/api/places/nearby` | Nearby places search |
-| `POST` | `/api/routes/directions` | Driving directions |
-| `GET` | `/api/cities` | City center coordinates |
-| `GET` | `/api/status` | Health check |
+| Query | What it does |
+|-------|--------------|
+| `Find tourist attractions near Pune` | Overpass search around Pune centre |
+| `Show restaurants near Gateway of India` | Geocodes landmark → nearby restaurants |
+| `Find hotels near Red Fort` | Geocodes landmark → nearby hotels |
+| `Museums in Chennai` | City-centre Overpass search |
+| `Directions from Shaniwar Wada to Aga Khan Palace` | OSRM routing |
+| `Find hotels near Charminar` | Geocodes Charminar → nearby hotels |
 
 ---
 
-## 🔒 API Key Security
+## OSM Attribution
 
-- The API key is **only** stored in `.env` — never committed to git
-- Backend (Flask) makes server-side calls to Places API and Routes API (key never reaches browser)
-- For Maps JavaScript API (frontend embed), restrict the key by **HTTP referrer** in Google Cloud Console
-- `.env` is listed in `.gitignore`
+This project uses data from **OpenStreetMap** (© OpenStreetMap contributors), licensed under the [Open Database Licence (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/).
 
----
+Map tiles are provided by **CARTO** under the [CartoDB attribution](https://carto.com/attributions).
 
-## ⚠️ Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| `GOOGLE_MAPS_API_KEY not configured` | Add key to `.env` and restart Flask |
-| `API key invalid or Places API not enabled` | Enable Places API (New) in Google Cloud Console |
-| `API quota exceeded` | Wait or increase quota in Cloud Console |
-| Map page shows "API Key Required" | Same as above — key must be in `.env` |
-| No results for a query | Try a more specific or differently phrased query |
+Routing is provided by **OSRM** (the Open Source Routing Machine).
 
 ---
 
-## 📝 Notes
+## Usage Policy Notes
 
-- All tourism data is **fetched live** from Google Maps — no hardcoded data
-- Results vary based on Google Maps availability for each location
-- Requires an active internet connection
-- Google Maps APIs are **paid** after free tier quotas ($200/month free credit)
+- **Nominatim** — max 1 request/second; this app enforces a 0.6 s sleep between calls. Do not use for high-volume or bulk requests.
+- **Overpass API** — free public instance at `overpass-api.de`; heavy queries time out after 25 s.
+- **OSRM public server** — free but no SLA; handle timeouts gracefully (the app does).
+
+---
+
+## Requirements
+
+```
+Flask>=3.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+```

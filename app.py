@@ -1,6 +1,7 @@
 """
 Tourist Guide Assistant
-Flask Backend - Google Maps Platform Integration
+Flask Backend - OpenStreetMap Integration
+(Nominatim + Overpass API + OSRM — no API key required)
 """
 
 import os
@@ -9,14 +10,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from google_maps_service import (
-    search_places, get_nearby_places, get_directions,
-    format_place, CITY_CENTERS, get_api_key
+from osm_service import (
+    search_nearby, geocode, get_directions, search_nominatim,
+    format_osm_place, CITY_CENTERS, OVERPASS_FILTERS
 )
 from intent_parser import parse_intent
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["JSON_AS_ASCII"] = False
+
 
 # ---------------------------------------------------------------------------
 # HTML PAGE ROUTES
@@ -30,9 +32,8 @@ def index():
 
 @app.route("/map")
 def map_page():
-    """Interactive Google Maps page."""
-    maps_key = get_api_key()
-    return render_template("map.html", page="map", maps_key=maps_key)
+    """Interactive Leaflet map page."""
+    return render_template("map.html", page="map")
 
 
 @app.route("/explore")
@@ -53,20 +54,12 @@ def places_redirect():
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
-    """Main chatbot endpoint — parses intent and calls Google Maps APIs."""
+    """Main chatbot endpoint — parses intent and calls OSM APIs."""
     data = request.get_json() or {}
     message = data.get("message", "").strip()
 
     if not message:
         return jsonify({"error": "Empty message"}), 400
-
-    api_key = get_api_key()
-    if not api_key:
-        return jsonify({
-            "answer": "⚠️ **Google Maps API key not configured.** Please add `GOOGLE_MAPS_API_KEY` to your `.env` file and restart the server. See `.env.example` for instructions.",
-            "places": [],
-            "intent": "NO_KEY"
-        })
 
     intent = parse_intent(message)
     answer = ""
@@ -78,57 +71,90 @@ def api_chat():
             origin = intent["origin"]
             dest = intent["destination"]
             result = get_directions(origin, dest)
+
             if "error" in result:
                 answer = f"❌ {result['error']}"
-            elif result.get("routes"):
-                route = result["routes"][0]
-                legs = route.get("legs", [])
-                dist_m = route.get("distanceMeters", 0)
-                dur = route.get("localizedValues", {}).get("duration", {}).get("text", "")
-                dist_km = round(dist_m / 1000, 1) if dist_m else "?"
-                steps_text = ""
-                if legs:
-                    leg = legs[0]
-                    steps = leg.get("steps", [])
-                    step_list = []
-                    for s in steps[:8]:
-                        nav = s.get("navigationInstruction", {})
-                        instr = nav.get("instructions", "")
-                        s_dist = s.get("localizedValues", {}).get("distance", {}).get("text", "")
-                        if instr:
-                            step_list.append(f"• {instr} ({s_dist})")
-                    steps_text = "\n".join(step_list)
+            else:
+                dist_km = result.get("distance_km", "?")
+                dur_str = result.get("duration_str", "?")
+                steps = result.get("steps", [])
+                osm_route_url = result.get("osm_route_url", "")
+                steps_text = "\n".join(steps[:8]) if steps else ""
+                orig_name = result.get("origin", {}).get("name", origin.title())
+                dest_name = result.get("destination", {}).get("name", dest.title())
                 answer = (
-                    f"🗺️ **Directions from {origin.title()} to {dest.title()}**\n\n"
-                    f"📏 Distance: **{dist_km} km** | ⏱️ Estimated Time: **{dur}**\n\n"
-                    + (f"**Step-by-step:**\n{steps_text}" if steps_text else "")
+                    f"🗺️ **Directions from {orig_name} to {dest_name}**\n\n"
+                    f"📍 Distance: **{dist_km} km** | ⏱️ Estimated Time: **{dur_str}**\n\n"
+                    + (f"**Step-by-step:**\n{steps_text}\n\n" if steps_text else "")
+                    + (f"[📍 View on OpenStreetMap ↗]({osm_route_url})" if osm_route_url else "")
                 )
-                extra = {"route_distance_km": dist_km, "route_duration": dur}
-            else:
-                answer = f"I couldn't find a route from **{origin}** to **{dest}**. Please check the place names and try again."
+                extra = {
+                    "route_distance_km": dist_km,
+                    "route_duration": dur_str,
+                    "osm_route_url": osm_route_url,
+                }
 
-        elif intent["intent"] in ("NEARBY_LANDMARK", "CITY_TYPE_SEARCH", "CITY_ATTRACTIONS", "LANDMARK_INFO", "GENERAL_SEARCH"):
-            query = intent["query"]
-            result = search_places(query)
-            if "error" in result and not result.get("places"):
-                answer = f"❌ {result['error']}"
+        elif intent["intent"] in ("NEARBY_LANDMARK", "CITY_TYPE_SEARCH", "CITY_ATTRACTIONS",
+                                   "LANDMARK_INFO", "GENERAL_SEARCH"):
+            place_type = intent.get("place_type") or "tourist_attraction"
+            place_type_label = intent.get("place_type_label") or "Places"
+            landmark = intent.get("landmark")
+            city_key = intent.get("city_key")
+            city_full = intent.get("city_full")
+
+            loc = None
+
+            # Priority 1: geocode landmark
+            if landmark:
+                query_str = landmark + (f", {city_full}" if city_full else ", India")
+                loc = geocode(query_str)
+
+            # Priority 2: use city center
+            if not loc and city_key and city_key in CITY_CENTERS:
+                c = CITY_CENTERS[city_key]
+                loc = {"lat": c["lat"], "lng": c["lng"]}
+
+            # Priority 3: geocode the query string
+            if not loc:
+                query_str = intent.get("query", message)
+                loc = geocode(query_str)
+
+            if not loc:
+                nom_fallback = search_nominatim(f"{place_type_label} in {message}")
+                if nom_fallback:
+                    places = nom_fallback
+                    answer = f"🔍 Found **{len(places)} {place_type_label}** from OpenStreetMap:"
+                else:
+                    answer = (
+                        f"I couldn't locate **{landmark or city_full or message}**. "
+                        "Try a more specific place name or city."
+                    )
             else:
-                raw_places = result.get("places", [])
-                places = [format_place(p) for p in raw_places]
+                radius = 3000 if landmark else 4000
+                res = search_nearby(
+                    loc["lat"], loc["lng"], place_type, radius
+                )
+                places = res.get("places", [])
+
+                if not places and landmark:
+                    places = search_nominatim(f"{place_type_label} near {landmark} India")
 
                 if not places:
-                    answer = f"I searched for **{query}** but found no results. Try rephrasing or being more specific."
-                else:
-                    type_label = intent.get("place_type_label") or "places"
-                    landmark = intent.get("landmark")
-                    city_full = intent.get("city_full")
-
-                    if landmark:
-                        answer = f"🗺️ Found **{len(places)} {type_label}** near **{landmark}**:"
-                    elif city_full:
-                        answer = f"🏙️ Found **{len(places)} {type_label}** in **{city_full.replace(', India', '')}**:"
+                    if res.get("error"):
+                        answer = f"⚠️ {res['error']}"
                     else:
-                        answer = f"🔍 Found **{len(places)} results** for your search:"
+                        answer = (
+                            f"I searched OpenStreetMap but found no **{place_type_label}** "
+                            f"near **{landmark or city_full or message}**. "
+                            "OSM data may be sparse in that area — try a different category."
+                        )
+                elif landmark:
+                    answer = f"🗺️ Found **{len(places)} {place_type_label}** near **{landmark}**:"
+                elif city_full:
+                    city_display = city_full.replace(", India", "")
+                    answer = f"🏙️ Found **{len(places)} {place_type_label}** in **{city_display}**:"
+                else:
+                    answer = f"🔍 Found **{len(places)} results** from OpenStreetMap:"
 
         return jsonify({
             "answer": answer,
@@ -145,27 +171,45 @@ def api_chat():
 # PLACES API ENDPOINTS
 # ---------------------------------------------------------------------------
 
+@app.route("/api/places/citytype", methods=["GET"])
+def api_places_citytype():
+    """Get places for a city + type using hardcoded city centres."""
+    city = (request.args.get("city") or "mumbai").lower()
+    place_type = request.args.get("type", "tourist_attraction")
+    radius = int(request.args.get("radius", 4000))
+
+    if city not in CITY_CENTERS:
+        return jsonify({"error": f"Unknown city '{city}'", "places": []}), 400
+
+    c = CITY_CENTERS[city]
+    res = search_nearby(c["lat"], c["lng"], place_type, radius)
+    places = res.get("places", [])
+    return jsonify({"places": places, "count": len(places), "city": city, "type": place_type})
+
+
 @app.route("/api/places/search", methods=["GET", "POST"])
 def api_places_search():
-    """Search places by text query."""
+    """Search places by text query (geocode then nearby search)."""
     if request.method == "POST":
         data = request.get_json() or {}
         query = data.get("query", "")
-        location_bias = data.get("location_bias")
+        place_type = data.get("type", "tourist_attraction")
+        radius = int(data.get("radius", 4000))
     else:
         query = request.args.get("query", "")
-        location_bias = None
+        place_type = request.args.get("type", "tourist_attraction")
+        radius = int(request.args.get("radius", 4000))
 
     if not query:
         return jsonify({"error": "query param required", "places": []}), 400
 
-    result = search_places(query, location_bias=location_bias)
-    if "error" in result and not result.get("places"):
-        return jsonify(result), 503
+    loc = geocode(query)
+    if not loc:
+        return jsonify({"error": f"Could not geocode '{query}'", "places": []}), 404
 
-    raw_places = result.get("places", [])
-    formatted = [format_place(p) for p in raw_places]
-    return jsonify({"places": formatted, "count": len(formatted)})
+    res = search_nearby(loc["lat"], loc["lng"], place_type, radius)
+    places = res.get("places", [])
+    return jsonify({"places": places, "count": len(places)})
 
 
 @app.route("/api/places/nearby", methods=["POST"])
@@ -180,18 +224,14 @@ def api_places_nearby():
     if lat is None or lng is None:
         return jsonify({"error": "lat and lng required", "places": []}), 400
 
-    result = get_nearby_places(float(lat), float(lng), place_type, radius)
-    if "error" in result and not result.get("places"):
-        return jsonify(result), 503
-
-    raw_places = result.get("places", [])
-    formatted = [format_place(p) for p in raw_places]
-    return jsonify({"places": formatted, "count": len(formatted)})
+    res = search_nearby(float(lat), float(lng), place_type, radius)
+    places = res.get("places", [])
+    return jsonify({"places": places, "count": len(places)})
 
 
 @app.route("/api/routes/directions", methods=["POST"])
 def api_routes_directions():
-    """Get driving directions between two places."""
+    """Get driving directions between two places via OSRM."""
     data = request.get_json() or {}
     origin = data.get("origin", "")
     destination = data.get("destination", "")
@@ -201,6 +241,18 @@ def api_routes_directions():
 
     result = get_directions(origin, destination)
     return jsonify(result)
+
+
+@app.route("/api/geocode", methods=["GET"])
+def api_geocode():
+    """Geocode a place name via Nominatim."""
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify({"error": "q param required"}), 400
+    loc = geocode(q)
+    if not loc:
+        return jsonify({"error": f"Could not geocode '{q}'"}), 404
+    return jsonify(loc)
 
 
 @app.route("/api/cities", methods=["GET"])
@@ -214,14 +266,14 @@ def api_status():
     """Health check."""
     return jsonify({
         "status": "ok",
-        "google_maps_configured": bool(get_api_key()),
+        "data_source": "OpenStreetMap (Nominatim + Overpass API + OSRM)",
+        "api_key_required": False,
         "app": "Tourist Guide Assistant"
     })
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print(f"Starting Tourist Guide Assistant on http://localhost:{port}")
-    if not get_api_key():
-        print("WARNING: GOOGLE_MAPS_API_KEY not set in .env — API calls will fail!")
+    print(f"🗺️  Tourist Guide Assistant starting on http://localhost:{port}")
+    print("📡 Data source: OpenStreetMap — no API key required!")
     app.run(host="0.0.0.0", port=port, debug=True)

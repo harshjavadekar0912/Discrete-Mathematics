@@ -1,6 +1,6 @@
 /**
  * Tourist Guide Assistant - Chat Client Logic
- * Powered by Google Maps Platform
+ * Powered by OpenStreetMap (Nominatim + Overpass API + OSRM)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     typingDiv.innerHTML = `
       <div class="avatar bot-avatar">🗺️</div>
       <div class="message-bubble" style="color: var(--text-muted); font-style: italic;">
-        Searching Google Maps...
+        Searching OpenStreetMap...
       </div>
     `;
     chatMessages.appendChild(typingDiv);
@@ -98,9 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Route info
     let routeHtml = '';
     if (data.route_distance_km || data.route_duration) {
+      const osmRouteLink = data.osm_route_url
+        ? `&nbsp;|&nbsp; <a href="${escapeHtml(data.osm_route_url)}" target="_blank" rel="noopener" style="color:#38bdf8; font-size:0.82rem;">📍 View route on OSM ↗</a>`
+        : '';
       routeHtml = `
         <div class="route-info-box" style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: rgba(2,132,199,0.08); border-left: 3px solid #0284c7; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.85rem;">
-          <strong>📏 ${data.route_distance_km} km</strong> &nbsp;|&nbsp; <strong>⏱️ ${data.route_duration}</strong>
+          <strong>📍 ${data.route_distance_km} km</strong> &nbsp;|&nbsp; <strong>⏱️ ${data.route_duration}</strong>${osmRouteLink}
         </div>
       `;
     }
@@ -125,16 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const badgeClass = `badge-${cat.toLowerCase()}`;
     const name = p.name || 'Unknown Place';
     const address = p.address || '';
-    const rating = p.rating ? `⭐ ${p.rating}` : '';
-    const reviews = p.review_count ? `(${p.review_count.toLocaleString()})` : '';
     const hours = p.opening_hours ? `🕐 ${p.opening_hours}` : '';
-    const price = p.price_label || '';
-    const mapsUri = p.maps_uri || '';
-    const summary = p.summary || '';
-
-    const mapsLink = mapsUri
-      ? `<a href="${escapeHtml(mapsUri)}" target="_blank" rel="noopener" style="font-size: 0.75rem; color: #38bdf8; text-decoration: none; display: inline-block; margin-top: 0.4rem;">📍 Open in Google Maps ↗</a>`
+    const phone = p.phone ? `📞 ${p.phone}` : '';
+    const cuisine = p.cuisine ? `🍴 ${p.cuisine}` : '';
+    const website = p.website
+      ? `<a href="${escapeHtml(p.website)}" target="_blank" rel="noopener" style="font-size: 0.75rem; color: #a78bfa; text-decoration: none; display: inline-block; margin-top: 0.3rem;">🌐 Website ↗</a>`
       : '';
+    const osmLink = p.osm_url
+      ? `<a href="${escapeHtml(p.osm_url)}" target="_blank" rel="noopener" style="font-size: 0.75rem; color: #38bdf8; text-decoration: none; display: inline-block; margin-top: 0.4rem;">📍 View on OpenStreetMap ↗</a>`
+      : '';
+
+    const metaItems = [hours, phone, cuisine].filter(Boolean);
 
     return `
       <div class="place-card">
@@ -143,14 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="place-meta">
           ${address ? `<span style="font-size:0.78rem; color: var(--text-muted);">📍 ${escapeHtml(address)}</span>` : ''}
         </div>
-        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-size: 0.8rem; margin-top: 0.3rem; color: var(--text-muted);">
-          ${rating ? `<span style="color:#fbbf24;">${escapeHtml(rating)}</span>` : ''}
-          ${reviews ? `<span>${escapeHtml(reviews)}</span>` : ''}
-          ${hours ? `<span>${escapeHtml(hours)}</span>` : ''}
+        ${metaItems.length > 0 ? `<div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-size: 0.78rem; margin-top: 0.3rem; color: var(--text-muted);">${metaItems.map(i => `<span>${escapeHtml(i)}</span>`).join('')}</div>` : ''}
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.3rem;">
+          ${osmLink}
+          ${website}
         </div>
-        ${price ? `<div class="place-price" style="margin-top: 0.3rem; font-size: 0.8rem;">${escapeHtml(price)}</div>` : ''}
-        ${summary ? `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(summary)}</div>` : ''}
-        ${mapsLink}
       </div>
     `;
   }
@@ -170,9 +171,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function formatMarkdown(text) {
     if (!text) return '';
-    return escapeHtml(text)
+    // Don't double-escape — the text from the server may contain markdown links [label](url)
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:#38bdf8;">$1</a>')
       .replace(/\n/g, '<br>');
   }
 });
