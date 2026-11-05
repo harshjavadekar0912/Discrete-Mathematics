@@ -5,6 +5,7 @@
 
 let map = null;
 const markers = [];
+window.markers = markers;
 
 // City centers matching osm_service.py CITY_CENTERS
 const CITY_CENTERS = {
@@ -22,7 +23,7 @@ function makeDivIcon() {
     html: `<div style="
       width: 16px; height: 16px;
       background: #38bdf8;
-      border: 2px solid #fff;
+      border: 2px solid #ffffff;
       border-radius: 50%;
       box-shadow: 0 0 8px rgba(56,189,248,0.7);
     "></div>`,
@@ -33,7 +34,10 @@ function makeDivIcon() {
 }
 
 function initMap() {
+  if (!document.getElementById('map')) return;
+
   map = L.map('map').setView([20.5937, 78.9629], 5);
+  window.map = map;
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -51,10 +55,10 @@ function addMarker(place) {
   if (!place.lat || !place.lng || !map) return;
 
   const osmLink = place.osm_url
-    ? `<br><a href="${place.osm_url}" target="_blank" style="color:#38bdf8; font-size:12px;">View on OpenStreetMap ↗</a>`
+    ? `<br><a href="${escapeHtml(place.osm_url)}" target="_blank" rel="noopener" style="color:#0284c7; font-size:12px; font-weight:600; text-decoration:none;">View on OpenStreetMap ↗</a>`
     : '';
-  const hours = place.opening_hours ? `<br><span style="font-size:11px; color:#94a3b8;">🕐 ${place.opening_hours}</span>` : '';
-  const phone = place.phone ? `<br><span style="font-size:11px; color:#94a3b8;">📞 ${place.phone}</span>` : '';
+  const hours = place.opening_hours ? `<br><span style="font-size:11px; color:#475569;">🕐 ${escapeHtml(place.opening_hours)}</span>` : '';
+  const phone = place.phone ? `<br><span style="font-size:11px; color:#475569;">📞 ${escapeHtml(place.phone)}</span>` : '';
 
   const popup = L.popup({ maxWidth: 260 }).setContent(`
     <div style="font-family: Inter, sans-serif; padding: 4px;">
@@ -80,7 +84,7 @@ function renderResults(places) {
 
   resultsDiv.innerHTML = places.map(p => {
     const cat = p.category || 'Place';
-    const badgeClass = `badge-${cat.toLowerCase()}`;
+    const badgeClass = `badge-${cat.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
     const osmLink = p.osm_url
       ? `<a href="${escapeHtml(p.osm_url)}" target="_blank" rel="noopener" style="font-size:0.72rem; color:#38bdf8; text-decoration:none;">OSM ↗</a>`
       : '';
@@ -101,6 +105,13 @@ function renderResults(places) {
 function focusPlace(lat, lng) {
   if (!map || !lat || !lng) return;
   map.setView([lat, lng], 16);
+  const matched = markers.find(m => {
+    const pos = m.getLatLng();
+    return Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001;
+  });
+  if (matched) {
+    matched.openPopup();
+  }
 }
 
 async function searchPlaces(query) {
@@ -161,9 +172,19 @@ function escapeHtml(str) {
 
 // DOM event binding
 document.addEventListener('DOMContentLoaded', () => {
-  // Init Leaflet map
-  if (document.getElementById('map')) {
+  // Init Leaflet map safely
+  if (typeof L !== 'undefined' && document.getElementById('map')) {
     initMap();
+  } else if (document.getElementById('map')) {
+    console.error('Leaflet library (L) is not loaded.');
+    document.getElementById('map').innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--text-muted); text-align:center; padding:2rem;">
+        <div>
+          <div style="font-size:2.5rem; margin-bottom:1rem;">⚠️</div>
+          <p>Unable to load map library. Please check your internet connection and refresh.</p>
+        </div>
+      </div>
+    `;
   }
 
   const searchBtn = document.getElementById('mapSearchBtn');
