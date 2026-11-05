@@ -1,18 +1,13 @@
 /**
- * Tourist Guide Knowledge Graph Chatbot - Chat Client Logic
+ * Tourist Guide Assistant - Chat Client Logic
+ * Powered by Google Maps Platform
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chatMessages');
   const chatForm = document.getElementById('chatForm');
   const chatInput = document.getElementById('chatInput');
-  const sendBtn = document.getElementById('sendBtn');
   const queryChips = document.querySelectorAll('.chip-btn');
-  const statusBadge = document.getElementById('statusBadge');
-  const neo4jModal = document.getElementById('neo4jModal');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const neo4jForm = document.getElementById('neo4jForm');
-  const seedBtn = document.getElementById('seedBtn');
 
   // Handle Quick Chips
   queryChips.forEach(chip => {
@@ -31,12 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const message = chatInput.value.trim();
     if (!message) return;
 
-    // Append user message
     appendUserMessage(message);
     chatInput.value = '';
     chatInput.focus();
 
-    // Show bot typing indicator
     const typingElem = appendTypingIndicator();
 
     try {
@@ -50,12 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
       typingElem.remove();
 
       if (data.error) {
-        appendBotMessage({
-          answer: `Error: ${data.error}`,
-          cypher_query: null,
-          discrete_math_concept: null,
-          records: []
-        });
+        appendBotMessage({ answer: `❌ ${data.error}`, places: [] });
       } else {
         appendBotMessage(data);
       }
@@ -63,9 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       typingElem.remove();
       appendBotMessage({
         answer: `Connection error: ${err.message}. Please verify the Flask server is running.`,
-        cypher_query: null,
-        discrete_math_concept: null,
-        records: []
+        places: []
       });
     }
   });
@@ -85,9 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const typingDiv = document.createElement('div');
     typingDiv.className = 'message bot typing-msg';
     typingDiv.innerHTML = `
-      <div class="avatar bot-avatar">🧭</div>
+      <div class="avatar bot-avatar">🗺️</div>
       <div class="message-bubble" style="color: var(--text-muted); font-style: italic;">
-        Querying Knowledge Graph with Cypher...
+        Searching Google Maps...
       </div>
     `;
     chatMessages.appendChild(typingDiv);
@@ -100,49 +86,33 @@ document.addEventListener('DOMContentLoaded', () => {
     msgDiv.className = 'message bot';
 
     let cardsHtml = '';
-    if (data.records && data.records.length > 0) {
+    const places = data.places || [];
+    if (places.length > 0) {
       cardsHtml = `
-        <div class="cards-grid">
-          ${data.records.slice(0, 6).map(r => renderPlaceCard(r)).join('')}
+        <div class="cards-grid" style="margin-top: 1rem;">
+          ${places.slice(0, 8).map(p => renderPlaceCard(p)).join('')}
         </div>
       `;
     }
 
-    let cypherHtml = '';
-    if (data.cypher_query) {
-      cypherHtml = `
-        <div class="cypher-preview">
-          <div class="cypher-header">
-            <span>⚡ Executed Cypher Query (${escapeHtml(data.execution_engine || 'Graph Engine')})</span>
-            <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${escapeJsString(data.cypher_query)}\`); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 1500)" style="background: none; border: none; color: #38bdf8; cursor: pointer; font-size: 0.75rem;">Copy</button>
-          </div>
-          <pre class="cypher-code"><code>${escapeHtml(data.cypher_query)}</code></pre>
+    // Route info
+    let routeHtml = '';
+    if (data.route_distance_km || data.route_duration) {
+      routeHtml = `
+        <div class="route-info-box" style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: rgba(2,132,199,0.08); border-left: 3px solid #0284c7; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.85rem;">
+          <strong>📏 ${data.route_distance_km} km</strong> &nbsp;|&nbsp; <strong>⏱️ ${data.route_duration}</strong>
         </div>
       `;
     }
 
-    let mathHtml = '';
-    if (data.discrete_math_concept) {
-      mathHtml = `
-        <div class="math-concept-card">
-          <div class="math-concept-title">
-            <span>📐</span> Discrete Mathematics Mapping
-          </div>
-          <div>${escapeHtml(data.discrete_math_concept)}</div>
-        </div>
-      `;
-    }
-
-    // Format markdown bolding in answer
-    const formattedAnswer = formatMarkdown(data.answer);
+    const formattedAnswer = formatMarkdown(data.answer || '');
 
     msgDiv.innerHTML = `
-      <div class="avatar bot-avatar">🧭</div>
+      <div class="avatar bot-avatar">🗺️</div>
       <div class="message-bubble">
         <div>${formattedAnswer}</div>
+        ${routeHtml}
         ${cardsHtml}
-        ${cypherHtml}
-        ${mathHtml}
       </div>
     `;
 
@@ -150,35 +120,37 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollToBottom();
   }
 
-  function renderPlaceCard(record) {
-    const cat = record.category || 'Place';
+  function renderPlaceCard(p) {
+    const cat = p.category || 'Place';
     const badgeClass = `badge-${cat.toLowerCase()}`;
-    const name = record.name || record.station_name || 'Location';
-    const area = record.area ? `📍 ${record.area}` : '';
-    const rating = record.rating ? `⭐ ${record.rating}` : '';
-    const dist = record.distance_km !== undefined ? `🚶 ${record.distance_km} km` : '';
-    
-    let extra = '';
-    if (record.price_inr !== undefined) {
-      extra = `<div class="place-price">₹${record.price_inr}</div>`;
-    } else if (record.entry_fee !== undefined) {
-      extra = `<div class="place-price">${record.entry_fee === 0 ? 'Free Entry' : 'Entry: ₹' + record.entry_fee}</div>`;
-    } else if (record.cuisine) {
-      extra = `<div style="font-size: 0.8rem; color: #cbd5e1;">🍲 ${record.cuisine}</div>`;
-    } else if (record.line) {
-      extra = `<div style="font-size: 0.8rem; color: #38bdf8;">🚇 ${record.line}</div>`;
-    }
+    const name = p.name || 'Unknown Place';
+    const address = p.address || '';
+    const rating = p.rating ? `⭐ ${p.rating}` : '';
+    const reviews = p.review_count ? `(${p.review_count.toLocaleString()})` : '';
+    const hours = p.opening_hours ? `🕐 ${p.opening_hours}` : '';
+    const price = p.price_label || '';
+    const mapsUri = p.maps_uri || '';
+    const summary = p.summary || '';
+
+    const mapsLink = mapsUri
+      ? `<a href="${escapeHtml(mapsUri)}" target="_blank" rel="noopener" style="font-size: 0.75rem; color: #38bdf8; text-decoration: none; display: inline-block; margin-top: 0.4rem;">📍 Open in Google Maps ↗</a>`
+      : '';
 
     return `
       <div class="place-card">
         <span class="place-badge ${badgeClass}">${escapeHtml(cat)}</span>
         <div class="place-title">${escapeHtml(name)}</div>
         <div class="place-meta">
-          ${area ? `<span>${escapeHtml(area)}</span>` : ''}
-          ${rating ? `<span>${rating}</span>` : ''}
-          ${dist ? `<span>${dist}</span>` : ''}
+          ${address ? `<span style="font-size:0.78rem; color: var(--text-muted);">📍 ${escapeHtml(address)}</span>` : ''}
         </div>
-        ${extra}
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-size: 0.8rem; margin-top: 0.3rem; color: var(--text-muted);">
+          ${rating ? `<span style="color:#fbbf24;">${escapeHtml(rating)}</span>` : ''}
+          ${reviews ? `<span>${escapeHtml(reviews)}</span>` : ''}
+          ${hours ? `<span>${escapeHtml(hours)}</span>` : ''}
+        </div>
+        ${price ? `<div class="place-price" style="margin-top: 0.3rem; font-size: 0.8rem;">${escapeHtml(price)}</div>` : ''}
+        ${summary ? `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(summary)}</div>` : ''}
+        ${mapsLink}
       </div>
     `;
   }
@@ -189,88 +161,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  function escapeJsString(str) {
-    if (!str) return '';
-    return str.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function formatMarkdown(text) {
     if (!text) return '';
-    // Format bold **text** -> <strong>text</strong>
-    let out = escapeHtml(text)
+    return escapeHtml(text)
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n/g, '<br>');
-    return out;
-  }
-
-  // Neo4j Modal Handlers
-  if (statusBadge && neo4jModal) {
-    statusBadge.addEventListener('click', () => {
-      neo4jModal.classList.add('active');
-    });
-  }
-
-  if (closeModalBtn) {
-    closeModalBtn.addEventListener('click', () => {
-      neo4jModal.classList.remove('active');
-    });
-  }
-
-  if (neo4jModal) {
-    neo4jModal.addEventListener('click', (e) => {
-      if (e.target === neo4jModal) {
-        neo4jModal.classList.remove('active');
-      }
-    });
-  }
-
-  if (neo4jForm) {
-    neo4jForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const uri = document.getElementById('neo4jUri').value.trim();
-      const user = document.getElementById('neo4jUser').value.trim();
-      const password = document.getElementById('neo4jPass').value.trim();
-      const resultElem = document.getElementById('neo4jResult');
-
-      resultElem.innerText = 'Connecting to Neo4j...';
-      try {
-        const res = await fetch('/api/neo4j/connect', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uri, user, password })
-        });
-        const data = await res.json();
-        resultElem.innerText = data.message;
-        if (data.connected) {
-          resultElem.style.color = '#34d399';
-          setTimeout(() => location.reload(), 1200);
-        } else {
-          resultElem.style.color = '#f87171';
-        }
-      } catch (err) {
-        resultElem.innerText = `Error: ${err.message}`;
-        resultElem.style.color = '#f87171';
-      }
-    });
-  }
-
-  if (seedBtn) {
-    seedBtn.addEventListener('click', async () => {
-      const resultElem = document.getElementById('neo4jResult');
-      resultElem.innerText = 'Seeding Neo4j database...';
-      try {
-        const res = await fetch('/api/neo4j/seed', { method: 'POST' });
-        const data = await res.json();
-        resultElem.innerText = data.message || data.error;
-        resultElem.style.color = data.success ? '#34d399' : '#f87171';
-      } catch (err) {
-        resultElem.innerText = `Error: ${err.message}`;
-        resultElem.style.color = '#f87171';
-      }
-    });
   }
 });

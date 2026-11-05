@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Tourist Guide Knowledge Graph Chatbot - Design System & CSS
-   Discrete Mathematics Project
+   Tourist Guide Assistant - Design System & CSS
+   Powered by Google Maps Platform
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
@@ -171,17 +171,13 @@ body {
   border: 1px solid transparent;
 }
 
-.status-badge.connected {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.3);
+.status-badge.maps-powered {
+  background: rgba(2, 132, 199, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+  cursor: default;
 }
 
-.status-badge.in-memory {
-  background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.3);
-}
 
 .status-dot {
   width: 8px;
@@ -361,55 +357,14 @@ body {
   width: 100%;
 }
 
-/* Discrete Math Concept Box */
-.math-concept-card {
+/* Route Directions Info Box */
+.route-info-box {
   margin-top: 0.75rem;
   padding: 0.75rem 1rem;
-  background: rgba(139, 92, 246, 0.08);
-  border-left: 3px solid var(--accent-purple);
+  background: rgba(2, 132, 199, 0.08);
+  border-left: 3px solid var(--primary-light);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: 0.85rem;
-}
-
-.math-concept-title {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: #c084fc;
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
-}
-
-/* Cypher Query Box */
-.cypher-preview {
-  margin-top: 0.75rem;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.cypher-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 0.8rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.cypher-code {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  color: #38bdf8;
-  padding: 0.75rem 0.8rem;
-  white-space: pre-wrap;
-  word-break: break-all;
+  font-size: 0.88rem;
 }
 
 /* Result Cards Container in Chat */
@@ -604,7 +559,7 @@ body {
 .metric-value { font-weight: 600; color: #ffffff; }
 
 /* ==========================================================================
-   Knowledge Graph Visualizer Page
+   Map / Graph Viewport Page
    ========================================================================== */
 .graph-viewport-card {
   background: var(--bg-card);
@@ -692,69 +647,7 @@ body {
   transition: var(--transition);
 }
 
-/* ==========================================================================
-   Discrete Mathematics Algorithms Page
-   ========================================================================== */
-.math-tabs {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.75rem;
-  overflow-x: auto;
-}
-
-.tab-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  padding: 0.65rem 1.4rem;
-  border-radius: var(--radius-full);
-  color: var(--text-muted);
-  font-family: var(--font-heading);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: var(--transition);
-}
-
-.tab-btn:hover {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.tab-btn.active {
-  background: rgba(2, 132, 199, 0.15);
-  color: #38bdf8;
-  border-color: rgba(56, 189, 248, 0.3);
-}
-
-.math-section {
-  display: none;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.math-section.active {
-  display: block;
-}
-
-.algorithm-grid {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 2rem;
-}
-
-.algorithm-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.75rem;
-  box-shadow: var(--shadow-card);
-}
-
+/* Common Form Controls & Buttons */
 .form-group {
   margin-bottom: 1.25rem;
 }
@@ -810,76 +703,6 @@ body {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
-}
-
-/* Step Trace Table */
-.trace-table-container {
-  overflow-x: auto;
-  margin-top: 1rem;
-}
-
-.trace-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.trace-table th {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.trace-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.trace-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.badge-tag {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.badge-tag.relaxed { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-.badge-tag.kept { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-.badge-tag.push { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-.badge-tag.pop { background: rgba(244, 63, 94, 0.2); color: #f43f5e; }
-
-/* Set Theory Venn Preview */
-.venn-card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-}
-
-.venn-box {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-}
-
-.venn-box.intersection {
-  border-color: rgba(139, 92, 246, 0.4);
-  background: rgba(139, 92, 246, 0.08);
-}
-
-.venn-box-title {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
 }
 
 /* Modal */

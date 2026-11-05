@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Interactive Map{% endblock %}
+
+{% block extra_head %}
+{% if maps_key %}
+<script>
+  window.MAPS_API_KEY = "{{ maps_key }}";
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="hero-header" style="margin-bottom: 1.5rem;">
+  <div class="hero-pill">
+    <span>🗺️</span> Google Maps Platform
+  </div>
+  <h1 class="hero-title" style="font-size: 2rem;">
+    Interactive <span>Map Explorer</span>
+  </h1>
+  <p class="hero-desc" style="font-size: 0.95rem;">
+    Search for places across India — results are powered by Google Maps Places API in real time.
+  </p>
+</section>
+
+<!-- Search & Filter Bar -->
+<div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem 1.75rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+  <input 
+    type="text" 
+    id="mapSearchInput" 
+    class="form-input" 
+    placeholder="Search a place (e.g. 'museums in Delhi')" 
+    style="flex: 1; min-width: 220px;"
+  >
+  <button id="mapSearchBtn" class="chat-send-btn" style="padding: 0.7rem 1.5rem;">
+    <span>Search</span> <span>🔍</span>
+  </button>
+  
+  <!-- City Quick Filters -->
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <button class="filter-btn city-btn active" data-city="">All</button>
+    <button class="filter-btn city-btn" data-city="mumbai">Mumbai</button>
+    <button class="filter-btn city-btn" data-city="delhi">Delhi</button>
+    <button class="filter-btn city-btn" data-city="pune">Pune</button>
+    <button class="filter-btn city-btn" data-city="chennai">Chennai</button>
+    <button class="filter-btn city-btn" data-city="hyderabad">Hyderabad</button>
+  </div>
+</div>
+
+<!-- Map + Results Layout -->
+<div style="display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; min-height: 580px;">
+  <!-- Map Container -->
+  <div class="graph-viewport-card" style="min-height: 580px; height: auto; display: flex; flex-direction: column; overflow: hidden;">
+    {% if maps_key %}
+    <div id="map" style="flex: 1; min-height: 560px; border-radius: var(--radius-lg);"></div>
+    {% else %}
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; color: var(--text-muted); padding: 2rem; text-align: center;">
+      <div style="font-size: 3rem;">🗺️</div>
+      <h3 style="color: #fff;">Google Maps API Key Required</h3>
+      <p style="max-width: 400px;">Add your <code>GOOGLE_MAPS_API_KEY</code> to the <code>.env</code> file and restart the server to enable the interactive map.</p>
+      <p style="font-size: 0.85rem;">See <strong>.env.example</strong> for setup instructions.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Results Sidebar -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem; overflow-y: auto; max-height: 600px;">
+    <div class="panel-title"><span>📍</span> Search Results</div>
+    <div id="mapResults">
+      <p style="color: var(--text-muted); font-size: 0.88rem; text-align: center; padding: 2rem 0;">
+        Search for a place or click a city button to see results here.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+{% if maps_key %}
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key={{ maps_key }}&libraries=places&callback=initMap">
+</script>
+{% endif %}
+{% endblock %}

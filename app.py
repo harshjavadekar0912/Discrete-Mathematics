@@ -1,206 +1,227 @@
 """
-Tourist Guide Knowledge Graph Chatbot
-Flask Backend Application
-Discrete Mathematics Project
+Tourist Guide Assistant
+Flask Backend - Google Maps Platform Integration
 """
 
 import os
 from flask import Flask, render_template, request, jsonify
+from dotenv import load_dotenv
 
-from graph_db import kg_service
-from cypher_queries import bot_engine
+load_dotenv()
 
+from google_maps_service import (
+    search_places, get_nearby_places, get_directions,
+    format_place, CITY_CENTERS, get_api_key
+)
+from intent_parser import parse_intent
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["JSON_AS_ASCII"] = False
 
-
-# =============================================================================
+# ---------------------------------------------------------------------------
 # HTML PAGE ROUTES
-# =============================================================================
+# ---------------------------------------------------------------------------
 
 @app.route("/")
 def index():
     """Chatbot Home Interface."""
-    return render_template(
-        "index.html",
-        page="chat",
-        neo4j_connected=kg_service.is_neo4j_connected,
-        total_nodes=len(kg_service.nodes),
-        total_edges=len(kg_service.edges)
-    )
+    return render_template("index.html", page="chat")
 
 
-@app.route("/graph")
-def graph_page():
-    """Interactive Knowledge Graph Visualizer."""
-    return render_template(
-        "graph.html",
-        page="graph",
-        neo4j_connected=kg_service.is_neo4j_connected,
-        total_nodes=len(kg_service.nodes),
-        total_edges=len(kg_service.edges)
-    )
+@app.route("/map")
+def map_page():
+    """Interactive Google Maps page."""
+    maps_key = get_api_key()
+    return render_template("map.html", page="map", maps_key=maps_key)
 
 
-@app.route("/discrete-math")
-def discrete_math_page():
-    """Discrete Mathematics Algorithms & Concepts Studio."""
-    return render_template(
-        "discrete_math.html",
-        page="math",
-        neo4j_connected=kg_service.is_neo4j_connected,
-        places=[p for p in kg_service.nodes if p.get("category") != "City"]
-    )
+@app.route("/explore")
+def explore_page():
+    """Places Explorer page."""
+    return render_template("explorer.html", page="places")
 
 
 @app.route("/places")
-def places_directory_page():
-    """Tourist Places Explorer & Cards."""
-    return render_template(
-        "explorer.html",
-        page="places",
-        neo4j_connected=kg_service.is_neo4j_connected,
-        places=[p for p in kg_service.nodes if p.get("category") != "City"]
-    )
+def places_redirect():
+    """Backwards compatibility redirect to /explore."""
+    return explore_page()
 
 
-# =============================================================================
-# REST API ENDPOINTS
-# =============================================================================
+# ---------------------------------------------------------------------------
+# CHAT API
+# ---------------------------------------------------------------------------
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
-    """Chatbot query endpoint."""
+    """Main chatbot endpoint — parses intent and calls Google Maps APIs."""
     data = request.get_json() or {}
     message = data.get("message", "").strip()
-    api_key = data.get("api_key", "").strip() or None
 
     if not message:
-        return jsonify({"error": "Empty message prompt"}), 400
+        return jsonify({"error": "Empty message"}), 400
 
-    response = bot_engine.process_query(message, user_api_key=api_key)
-    return jsonify(response)
+    api_key = get_api_key()
+    if not api_key:
+        return jsonify({
+            "answer": "⚠️ **Google Maps API key not configured.** Please add `GOOGLE_MAPS_API_KEY` to your `.env` file and restart the server. See `.env.example` for instructions.",
+            "places": [],
+            "intent": "NO_KEY"
+        })
+
+    intent = parse_intent(message)
+    answer = ""
+    places = []
+    extra = {}
+
+    try:
+        if intent["intent"] == "DIRECTIONS":
+            origin = intent["origin"]
+            dest = intent["destination"]
+            result = get_directions(origin, dest)
+            if "error" in result:
+                answer = f"❌ {result['error']}"
+            elif result.get("routes"):
+                route = result["routes"][0]
+                legs = route.get("legs", [])
+                dist_m = route.get("distanceMeters", 0)
+                dur = route.get("localizedValues", {}).get("duration", {}).get("text", "")
+                dist_km = round(dist_m / 1000, 1) if dist_m else "?"
+                steps_text = ""
+                if legs:
+                    leg = legs[0]
+                    steps = leg.get("steps", [])
+                    step_list = []
+                    for s in steps[:8]:
+                        nav = s.get("navigationInstruction", {})
+                        instr = nav.get("instructions", "")
+                        s_dist = s.get("localizedValues", {}).get("distance", {}).get("text", "")
+                        if instr:
+                            step_list.append(f"• {instr} ({s_dist})")
+                    steps_text = "\n".join(step_list)
+                answer = (
+                    f"🗺️ **Directions from {origin.title()} to {dest.title()}**\n\n"
+                    f"📏 Distance: **{dist_km} km** | ⏱️ Estimated Time: **{dur}**\n\n"
+                    + (f"**Step-by-step:**\n{steps_text}" if steps_text else "")
+                )
+                extra = {"route_distance_km": dist_km, "route_duration": dur}
+            else:
+                answer = f"I couldn't find a route from **{origin}** to **{dest}**. Please check the place names and try again."
+
+        elif intent["intent"] in ("NEARBY_LANDMARK", "CITY_TYPE_SEARCH", "CITY_ATTRACTIONS", "LANDMARK_INFO", "GENERAL_SEARCH"):
+            query = intent["query"]
+            result = search_places(query)
+            if "error" in result and not result.get("places"):
+                answer = f"❌ {result['error']}"
+            else:
+                raw_places = result.get("places", [])
+                places = [format_place(p) for p in raw_places]
+
+                if not places:
+                    answer = f"I searched for **{query}** but found no results. Try rephrasing or being more specific."
+                else:
+                    type_label = intent.get("place_type_label") or "places"
+                    landmark = intent.get("landmark")
+                    city_full = intent.get("city_full")
+
+                    if landmark:
+                        answer = f"🗺️ Found **{len(places)} {type_label}** near **{landmark}**:"
+                    elif city_full:
+                        answer = f"🏙️ Found **{len(places)} {type_label}** in **{city_full.replace(', India', '')}**:"
+                    else:
+                        answer = f"🔍 Found **{len(places)} results** for your search:"
+
+        return jsonify({
+            "answer": answer,
+            "places": places,
+            "intent": intent["intent"],
+            **extra,
+        })
+
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}", "places": []}), 500
 
 
-@app.route("/api/graph/data", methods=["GET"])
-def api_graph_data():
-    """Returns node and edge data for vis-network graph visualization."""
-    city_filter = request.args.get("city", "").strip() or None
-    graph_data = kg_service.get_graph_visualization_data(filter_city=city_filter)
-    return jsonify(graph_data)
+# ---------------------------------------------------------------------------
+# PLACES API ENDPOINTS
+# ---------------------------------------------------------------------------
+
+@app.route("/api/places/search", methods=["GET", "POST"])
+def api_places_search():
+    """Search places by text query."""
+    if request.method == "POST":
+        data = request.get_json() or {}
+        query = data.get("query", "")
+        location_bias = data.get("location_bias")
+    else:
+        query = request.args.get("query", "")
+        location_bias = None
+
+    if not query:
+        return jsonify({"error": "query param required", "places": []}), 400
+
+    result = search_places(query, location_bias=location_bias)
+    if "error" in result and not result.get("places"):
+        return jsonify(result), 503
+
+    raw_places = result.get("places", [])
+    formatted = [format_place(p) for p in raw_places]
+    return jsonify({"places": formatted, "count": len(formatted)})
 
 
-@app.route("/api/places/list", methods=["GET"])
-def api_places_list():
-    """Returns places list filtered by category, city, or price."""
-    category = request.args.get("category", "").strip() or None
-    city = request.args.get("city", "").strip() or None
-    places = kg_service.get_all_places(category=category, city=city)
-    return jsonify({"places": places, "count": len(places)})
-
-
-@app.route("/api/algorithms/bfs", methods=["POST"])
-def api_bfs():
-    """Executes Breadth-First Search with full step trace."""
+@app.route("/api/places/nearby", methods=["POST"])
+def api_places_nearby():
+    """Get nearby places by lat/lng and type."""
     data = request.get_json() or {}
-    start_id = data.get("start_id", "mumbai_gateway")
-    target_category = data.get("target_category") or None
-    max_depth = int(data.get("max_depth", 3))
+    lat = data.get("lat")
+    lng = data.get("lng")
+    place_type = data.get("type", "tourist_attraction")
+    radius = int(data.get("radius", 5000))
 
-    res = kg_service.math_engine.run_bfs(start_id, target_category, max_depth)
-    return jsonify(res)
+    if lat is None or lng is None:
+        return jsonify({"error": "lat and lng required", "places": []}), 400
+
+    result = get_nearby_places(float(lat), float(lng), place_type, radius)
+    if "error" in result and not result.get("places"):
+        return jsonify(result), 503
+
+    raw_places = result.get("places", [])
+    formatted = [format_place(p) for p in raw_places]
+    return jsonify({"places": formatted, "count": len(formatted)})
 
 
-@app.route("/api/algorithms/dfs", methods=["POST"])
-def api_dfs():
-    """Executes Depth-First Search with full LIFO stack trace and timestamps."""
+@app.route("/api/routes/directions", methods=["POST"])
+def api_routes_directions():
+    """Get driving directions between two places."""
     data = request.get_json() or {}
-    start_id = data.get("start_id", "mumbai_gateway")
-    max_depth = int(data.get("max_depth", 4))
+    origin = data.get("origin", "")
+    destination = data.get("destination", "")
 
-    res = kg_service.math_engine.run_dfs(start_id, max_depth)
-    return jsonify(res)
+    if not origin or not destination:
+        return jsonify({"error": "origin and destination required"}), 400
 
-
-@app.route("/api/algorithms/dijkstra", methods=["POST"])
-def api_dijkstra():
-    """Executes Dijkstra's Shortest Path Algorithm with step-by-step edge relaxation table."""
-    data = request.get_json() or {}
-    start_id = data.get("start_id", "mumbai_metro_csmt")
-    end_id = data.get("end_id", "mumbai_gateway")
-
-    res = kg_service.math_engine.run_dijkstra(start_id, end_id)
-    return jsonify(res)
+    result = get_directions(origin, destination)
+    return jsonify(result)
 
 
-@app.route("/api/sets/operate", methods=["POST"])
-def api_set_operation():
-    """Executes Set Theory operations (Union, Intersection, Difference, etc.)."""
-    data = request.get_json() or {}
-    set_a = data.get("set_a", {"category": "Museum", "label": "Museums"})
-    set_b = data.get("set_b", {"category": "Monument", "label": "Monuments"})
-    op = data.get("operation", "UNION")
-
-    res = kg_service.math_engine.run_set_operation(set_a, set_b, op)
-    return jsonify(res)
-
-
-@app.route("/api/relations/properties", methods=["GET"])
-def api_relation_properties():
-    """Analyzes mathematical properties of binary relations."""
-    rel = request.args.get("relation", "NEAR")
-    city = request.args.get("city", "Mumbai")
-
-    res = kg_service.math_engine.analyze_relation_properties(relation_type=rel, city=city)
-    return jsonify(res)
-
-
-@app.route("/api/matrix", methods=["GET"])
-def api_adjacency_matrix():
-    """Returns the adjacency matrix for places."""
-    city = request.args.get("city", "Mumbai")
-    limit = int(request.args.get("limit", 12))
-    matrix_data = kg_service.math_engine.get_adjacency_matrix(filter_city=city, max_nodes=limit)
-    return jsonify(matrix_data)
+@app.route("/api/cities", methods=["GET"])
+def api_cities():
+    """Return city center coordinates."""
+    return jsonify(CITY_CENTERS)
 
 
 @app.route("/api/status", methods=["GET"])
 def api_status():
-    """Returns database connection status and metrics."""
-    metrics = kg_service.math_engine.get_graph_metrics()
+    """Health check."""
     return jsonify({
-        "neo4j_connected": kg_service.is_neo4j_connected,
-        "neo4j_uri": kg_service.uri,
-        "neo4j_user": kg_service.user,
-        "error": kg_service.connection_error,
-        "active_engine": "Neo4j Database (Bolt: 7687)" if kg_service.is_neo4j_connected else "In-Memory Knowledge Graph Engine",
-        "total_nodes": metrics["num_vertices"],
-        "total_edges": metrics["num_edges"],
-        "density": metrics["graph_density"]
+        "status": "ok",
+        "google_maps_configured": bool(get_api_key()),
+        "app": "Tourist Guide Assistant"
     })
-
-
-@app.route("/api/neo4j/connect", methods=["POST"])
-def api_neo4j_connect():
-    """Allows user to test and reconnect to Neo4j instance from UI."""
-    data = request.get_json() or {}
-    uri = data.get("uri", "bolt://localhost:7687")
-    user = data.get("user", "neo4j")
-    passw = data.get("password", "password")
-
-    success, msg = kg_service.connect_neo4j(uri, user, passw)
-    return jsonify({"success": success, "message": msg, "connected": kg_service.is_neo4j_connected})
-
-
-@app.route("/api/neo4j/seed", methods=["POST"])
-def api_neo4j_seed():
-    """Seeds the active Neo4j database."""
-    res = kg_service.seed_neo4j_database()
-    return jsonify(res)
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print(f"Starting Tourist Guide Knowledge Graph Chatbot on http://localhost:{port}")
+    print(f"Starting Tourist Guide Assistant on http://localhost:{port}")
+    if not get_api_key():
+        print("WARNING: GOOGLE_MAPS_API_KEY not set in .env — API calls will fail!")
     app.run(host="0.0.0.0", port=port, debug=True)

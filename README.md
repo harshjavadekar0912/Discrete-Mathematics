@@ -1,193 +1,174 @@
-# 🧭 Tourist Guide Knowledge Graph Chatbot
+# 🗺️ Tourist Guide Assistant
 
-> **Discrete Mathematics Academic Project**  
-> Demonstrating **Graph Theory**, **Binary Relations**, **BFS/DFS Traversal**, **Dijkstra's Algorithm**, and **Set Theory** using **Neo4j** & **Python Flask**.
-
----
-
-## 🌟 Project Overview
-
-The **Tourist Guide Knowledge Graph Chatbot** is a complete, modern web application that helps tourists discover attractions, hotels, dining, and transit options across **5 major Indian cities: Mumbai, Delhi, Pune, Chennai, and Hyderabad**.
-
-The application models the tourist domain as an interconnected **Knowledge Graph** $G = (V, E)$ stored in Neo4j, converts natural-language queries into Cypher queries, executes them, and returns structured recommendations alongside mathematical explanations.
+A conversational AI chatbot that helps tourists explore **Mumbai, Delhi, Pune, Chennai, and Hyderabad** using **Google Maps Platform** as the exclusive real-time data source.
 
 ---
 
-## 📐 Discrete Mathematics Core Demonstrations
+## ✨ Features
 
-This project is explicitly structured around core Discrete Mathematics concepts:
-
-### 1. Graph Theory ($G = (V, E)$)
-* **Vertices ($V$):** Categorized tourist entities (91+ vertices):
-  * `City` (Mumbai, Delhi, Pune, Chennai, Hyderabad)
-  * `Monument` (Gateway of India, Red Fort, Shaniwar Wada, Marina Beach, Charminar, Golconda Fort, etc.)
-  * `Museum` (CSMVS Museum, National Museum, Kelkar Museum, Government Museum Chennai, Salar Jung Museum, etc.)
-  * `Hotel` (The Taj Mahal Palace, Haveli Dharampura, The Ritz-Carlton Pune, Taj Coromandel, Taj Falaknuma Palace, etc.)
-  * `Restaurant` (Karim's, Bademiya, Vaishali, Murugan Idli Shop, Paradise Biryani, Hotel Shadab, etc.)
-  * `MetroStation` (CSMT, Lal Quila, Civil Court Metro, Chennai Central, Charminar Metro, MGBS, etc.)
-* **Edges ($E$):** Labeled, directed, and undirected relationships:
-  * `LOCATED_IN`: Directed hierarchical relationship $(p) \to (c)$.
-  * `NEAR`: Undirected/Symmetric spatial proximity weighted by distance in kilometers.
-  * `CONNECTED_TO`: Transit and pedestrian navigation routes with distance ($km$) and mode (Metro, Walk, Ferry).
-  * `HAS_PRICE`: Categorical price tier relationship (Free, Budget, Moderate, Luxury).
-* **Graph Representations:**
-  * **Adjacency List:** $Adj[u] = \{v \in V \mid (u, v) \in E\}$
-  * **Adjacency Matrix:** $A \in \{0, 1\}^{n \times n}$ where $A_{ij} = 1$ if $(v_i, v_j) \in E$
-  * **Vertex Degrees:** In-degree $\text{deg}^-(v)$, Out-degree $\text{deg}^+(v)$, and Total Degree $\text{deg}(v)$.
-
-### 2. Binary Relations on Sets ($R \subseteq A \times B$)
-* **Reflexivity:** $\forall x \in V, (x, x) \in R$.  
-  * `NEAR` is *Irreflexive* in tourist navigation (landmarks are not listed as near themselves).
-* **Symmetry:** $\forall x, y \in V, (x, y) \in R \implies (y, x) \in R$.  
-  * `NEAR` and `CONNECTED_TO` are *Symmetric* (Euclidean distance is symmetric: $d(x, y) = d(y, x)$).
-* **Transitivity:** $\forall x, y, z \in V, ((x, y) \in R \land (y, z) \in R) \implies (x, z) \in R$.  
-  * `LOCATED_IN` is *Transitive* ($A$ in South Mumbai $\land$ South Mumbai in Mumbai $\implies A$ in Mumbai).
-  * `NEAR` is *Non-transitive* due to distance thresholds (Triangle Inequality).
-* **Equivalence Relation:** Evaluated and explained in the interactive Relation Inspector.
-
-### 3. Breadth-First Search (BFS)
-* **Concept:** Explores vertices in order of their distance from the source vertex using a **FIFO Queue**.
-* **Application:** Finds $k$-hop neighborhood places (e.g., immediate 1st-hop restaurants and 2nd-hop hotels).
-* **Time Complexity:** $O(|V| + |E|)$.
-* **Feature:** Interactive step-by-step visualizer with queue state, visited set, and exploration tree.
-
-### 4. Depth-First Search (DFS)
-* **Concept:** Explores as deep as possible along each branch before backtracking using a **LIFO Stack**.
-* **Application:** Discovers deep walking itineraries and topological paths.
-* **Feature:** Tracks vertex discovery timestamp $d[u]$ and finishing timestamp $f[u]$ with backtrack logs.
-
-### 5. Dijkstra's Shortest Path Algorithm
-* **Concept:** Greedy shortest path on non-negative weighted graphs using a Min-Heap priority queue.
-* **Application:** Finds optimal walking/metro route between transit stations and attractions.
-* **Edge Relaxation Formula:**
-  $$d[v] = \min(d[v], d[u] + w(u, v))$$
-* **Feature:** Displays exact step-by-step edge relaxation table showing tentative distance updates and predecessor decisions.
-
-### 6. Set Theory Operations
-* Let universe $U = \text{All Places}$:
-  * $M = \text{Museums}$, $N = \text{Monuments}$, $H = \text{Hotels}$, $R = \text{Restaurants}$
-  * $S_{\text{Mumbai}}, S_{\text{Delhi}}$
-* **Union ($A \cup B$):** $\{x \mid x \in A \lor x \in B\}$ (e.g., "Show museums and monuments").
-* **Intersection ($A \cap B$):** $\{x \mid x \in A \land x \in B\}$ (e.g., Heritage sites that are also Museums).
-* **Relative Complement / Difference ($A \setminus B$):** $\{x \mid x \in A \land x \notin B\}$.
-* **Principle of Inclusion-Exclusion (PIE):**
-  $$|A \cup B| = |A| + |B| - |A \cap B|$$
-  Verified dynamically with live cardinality badges and Venn diagram partition cards.
+- 💬 **Chatbot** — Ask natural-language questions; get real Google Maps results
+- 🗺️ **Interactive Map** — Browse and search places on a live Google Map
+- 📍 **Explore** — Browse attractions, restaurants, hotels and transit by city & category
+- 🔍 **Real-Time Data** — All results fetched live from Google Maps APIs (no hardcoded data)
+- 🔒 **Secure Keys** — API key stored in `.env`, never exposed to the client
 
 ---
 
-## 💬 Chatbot Queries & Cypher Mapping
+## 🏗️ Tech Stack
 
-The chatbot automatically translates tourist questions to Cypher:
+| Layer     | Technology                              |
+|-----------|-----------------------------------------|
+| Frontend  | HTML, CSS, JavaScript                   |
+| Backend   | Python 3.11+, Flask 3.x                 |
+| Data      | Google Maps Platform (Places & Routes)  |
+| Map Embed | Google Maps JavaScript API              |
 
-| Natural Language Query | Discrete Math Intent | Generated Cypher Pattern |
-|------------------------|----------------------|---------------------------|
-| *"Which restaurants are near Gateway of India?"* | 1st-degree Adjacency $N(u)$ | `MATCH (m:Place {name: 'Gateway of India'})-[r:NEAR]-(res:Restaurant) RETURN res.name, res.cuisine, res.rating, r.distance_km ORDER BY r.distance_km` |
-| *"Find hotels near Red Fort."* | Proximity Relation $R_{NEAR}$ | `MATCH (m:Place {name: 'Red Fort'})-[r:NEAR]-(h:Hotel) RETURN h.name, h.price_inr, h.rating, r.distance_km ORDER BY r.distance_km` |
-| *"Show museums in Mumbai."* | Relation $R_{LOCATED\_IN}$ | `MATCH (mus:Museum)-[:LOCATED_IN]->(c:City {name: 'Mumbai'}) RETURN mus.name, mus.description, mus.rating, mus.entry_fee` |
-| *"How can I reach Gateway of India from the nearest station?"* | Shortest Transit Route | `MATCH (m:Place {name: 'Gateway of India'})-[r:CONNECTED_TO\|NEAR]-(s:MetroStation) RETURN s.name, r.distance_km, r.mode ORDER BY r.distance_km LIMIT 1` |
-| *"Find the cheapest hotel near Red Fort."* | Min-Cost Optimization | `MATCH (m:Place {name: 'Red Fort'})-[r:NEAR]-(h:Hotel) RETURN h.name, h.price_inr, h.rating, r.distance_km ORDER BY h.price_inr ASC LIMIT 1` |
-| *"Show museums and monuments."* | Set Union $A \cup B$ | `MATCH (p:Place) WHERE (p:Museum OR p:Monument) RETURN p.name, p.category, p.city, p.rating` |
+### Google Maps APIs Used
 
----
-
-## 🛠️ Architecture & Tech Stack
-
-```
-   ┌────────────────────────────────────────────────────────┐
-   │             Modern Frontend Web Interface              │
-   │  HTML5 + Vanilla CSS (Glassmorphism) + JavaScript      │
-   │  vis-network.js Graph Canvas + Discrete Math Studio   │
-   └───────────────────────────▲────────────────────────────┘
-                               │ HTTP / JSON REST APIs
-   ┌───────────────────────────▼────────────────────────────┐
-   │                   Flask Backend (app.py)               │
-   │  - REST API Routing & Controllers                     │
-   │  - Discrete Math Engine (algorithms.py)                │
-   │  - Cypher Query Processor (cypher_queries.py)          │
-   └───────────────────────────▲────────────────────────────┘
-                               │
-               ┌───────────────┴───────────────┐
-               ▼                               ▼
-   ┌────────────────────────┐      ┌────────────────────────┐
-   │   Neo4j Database       │      │ In-Memory Graph Engine │
-   │   (Bolt Protocol:7687) │ (or) │ (Zero-Setup Fallback)  │
-   │   Native Cypher Query  │      │ Full Graph Algorithms  │
-   └────────────────────────┘      └────────────────────────┘
-```
-
-* **Dual-Mode Graph Engine:**
-  * **Live Neo4j:** When Neo4j is running, connects via official `neo4j` Python driver and executes queries on port 7687.
-  * **In-Memory Fallback:** When Neo4j is not running, the application seamlessly runs on its built-in Python In-Memory Knowledge Graph Engine, ensuring **100% functionality out-of-the-box** with zero external dependencies.
+| API | Purpose |
+|-----|---------|
+| **Places API (New)** — `searchText` | Chatbot & Explorer search |
+| **Places API (New)** — `searchNearby` | Nearby places search |
+| **Routes API** — `computeRoutes` | Directions & travel time |
+| **Maps JavaScript API** | Interactive map page |
 
 ---
 
-## 🚀 Quickstart Guide
+## 🚀 Quick Setup
 
-### 1. Install Dependencies
+### 1. Prerequisites
+
+- Python 3.11+ installed
+- A Google Cloud account with billing enabled
+- pip or virtualenv
+
+### 2. Get Your Google Maps API Key
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or use an existing one)
+3. Enable these APIs:
+   - **Maps JavaScript API**
+   - **Places API (New)**
+   - **Routes API**
+4. Go to **Credentials** → **Create Credentials** → **API Key**
+5. Copy your API key
+
+### 3. Configure Environment
+
 ```bash
+# Copy the example env file
+cp .env.example .env
+
+# Edit .env and paste your key
+# GOOGLE_MAPS_API_KEY=AIzaSy...your_key_here...
+```
+
+### 4. Install Dependencies
+
+```bash
+# Create a virtual environment (recommended)
+python -m venv venv
+
+# Activate it
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+# Install packages
 pip install -r requirements.txt
 ```
 
-### 2. Run the Web Application
+### 5. Run the App
+
 ```bash
 python app.py
 ```
-Open your browser and navigate to:
-```
-http://localhost:5000
-```
 
-### 3. (Optional) Connect to Neo4j
-If you have Neo4j running locally (via Neo4j Desktop or Docker):
-```bash
-docker run -d --name neo4j-tourist -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/password neo4j:latest
-```
-1. Click the status badge in the top navbar (`In-Memory Graph Engine`).
-2. Enter your Neo4j Bolt URI (`bolt://localhost:7687`), username, and password.
-3. Click **Connect Neo4j**, then click **Seed Cypher Data**.
-4. The system will execute all Cypher statements and switch to **Neo4j Connected** mode!
+Open **http://localhost:5000** in your browser.
+
+---
+
+## 💬 Sample Chatbot Queries
+
+| Query | What it does |
+|-------|-------------|
+| `Find tourist attractions near Pune.` | Searches Places API for attractions in Pune |
+| `Show restaurants near Gateway of India.` | Nearby restaurant search |
+| `Find hotels near Red Fort.` | Hotel search around Red Fort, Delhi |
+| `Find museums in Chennai.` | Museum search in Chennai |
+| `Show highly rated restaurants in Hyderabad.` | Restaurant search in Hyderabad |
+| `Directions from Shaniwar Wada to Aga Khan Palace.` | Routes API directions |
+| `Find hotels near Charminar.` | Hotel search near Charminar, Hyderabad |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-tourist-guide-kg/
-├── app.py                     # Flask application & REST endpoints
-├── graph_db.py                # Neo4j driver + In-Memory graph engine
-├── algorithms.py              # Discrete Math (BFS, DFS, Dijkstra, Sets, Relations)
-├── cypher_queries.py          # NL-to-Cypher translator & chatbot synthesizer
-├── seed_data.py               # 40+ nodes & relationships for Mumbai & Delhi
-├── requirements.txt           # Python dependencies
-├── .env.example               # Environment variables template
-├── data/
-│   └── seed_graph.cypher      # Standalone Cypher script for Neo4j Browser
-├── static/
-│   ├── css/
-│   │   └── style.css          # Glassmorphic dark UI stylesheet
-│   └── js/
-│       ├── chat.js            # Chatbot interaction & Cypher inspector
-│       ├── graph_viz.js       # vis-network physics graph visualizer
-│       ├── discrete_math.js   # Interactive BFS/DFS, Dijkstra & Sets visualizer
-│       └── explorer.js        # Tourist places directory & filtering
-└── templates/
-    ├── base.html              # Base HTML template with navbar & modal
-    ├── index.html             # Chatbot home page
-    ├── graph.html             # Knowledge Graph visualizer page
-    ├── discrete_math.html     # Discrete Mathematics algorithms studio
-    └── explorer.html          # Tourist places directory page
+tourist-guide/
+├── app.py                  # Flask app — all routes & API endpoints
+├── google_maps_service.py  # Google Maps API service layer
+├── intent_parser.py        # Natural language intent parser
+├── requirements.txt
+├── .env                    # Your secrets (never commit!)
+├── .env.example            # Template for .env
+├── .gitignore
+├── templates/
+│   ├── base.html           # Navbar, layout
+│   ├── index.html          # Chatbot page
+│   ├── map.html            # Interactive map page
+│   └── explorer.html       # Places explorer page
+└── static/
+    ├── css/style.css       # Dark glassmorphic design
+    └── js/
+        ├── chat.js         # Chatbot UI logic
+        ├── map.js          # Google Maps JS integration
+        └── explorer.js     # Places explorer UI
 ```
 
 ---
 
-## 🎯 Verification & Evaluation Checklist
+## 🔌 REST API Endpoints
 
-- [x] **Graph Theory:** Nodes (Places) and Edges (Relationships) represented and visualized.
-- [x] **Relations:** Mathematical breakdown of `NEAR`, `LOCATED_IN`, `CONNECTED_TO`, and `HAS_PRICE`.
-- [x] **BFS & DFS:** Interactive step-by-step queue and stack animators with discovery timestamps.
-- [x] **Dijkstra:** Shortest path route between locations with distance matrix and relaxation table.
-- [x] **Set Theory:** Interactive Union, Intersection, and Inclusion-Exclusion calculations.
-- [x] **Mumbai & Delhi:** Over 40 realistic nodes across Monuments, Museums, Hotels, Restaurants, and Metro Stations.
-- [x] **Chatbot:** Converts natural questions to Cypher and returns natural answers.
-- [x] **Fully Runnable:** Runs out-of-the-box with in-memory graph engine or connects to live Neo4j.
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/` | Chatbot page |
+| `GET` | `/map` | Interactive map page |
+| `GET` | `/explore` | Places explorer page |
+| `POST` | `/api/chat` | Main chatbot endpoint |
+| `GET/POST` | `/api/places/search` | Places text search |
+| `POST` | `/api/places/nearby` | Nearby places search |
+| `POST` | `/api/routes/directions` | Driving directions |
+| `GET` | `/api/cities` | City center coordinates |
+| `GET` | `/api/status` | Health check |
+
+---
+
+## 🔒 API Key Security
+
+- The API key is **only** stored in `.env` — never committed to git
+- Backend (Flask) makes server-side calls to Places API and Routes API (key never reaches browser)
+- For Maps JavaScript API (frontend embed), restrict the key by **HTTP referrer** in Google Cloud Console
+- `.env` is listed in `.gitignore`
+
+---
+
+## ⚠️ Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `GOOGLE_MAPS_API_KEY not configured` | Add key to `.env` and restart Flask |
+| `API key invalid or Places API not enabled` | Enable Places API (New) in Google Cloud Console |
+| `API quota exceeded` | Wait or increase quota in Cloud Console |
+| Map page shows "API Key Required" | Same as above — key must be in `.env` |
+| No results for a query | Try a more specific or differently phrased query |
+
+---
+
+## 📝 Notes
+
+- All tourism data is **fetched live** from Google Maps — no hardcoded data
+- Results vary based on Google Maps availability for each location
+- Requires an active internet connection
+- Google Maps APIs are **paid** after free tier quotas ($200/month free credit)
