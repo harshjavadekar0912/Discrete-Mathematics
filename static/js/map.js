@@ -6,6 +6,8 @@
 let map = null;
 const markers = [];
 window.markers = markers;
+const mapPlacesCache = {};
+let isMapSearching = false;
 
 // City centers matching osm_service.py CITY_CENTERS
 const CITY_CENTERS = {
@@ -117,13 +119,34 @@ function focusPlace(lat, lng) {
 }
 
 async function searchPlaces(query) {
+  if (isMapSearching) return;
   const resultsDiv = document.getElementById('mapResults');
+  const searchBtn = document.getElementById('mapSearchBtn');
+
+  const cacheKey = `search_${query.toLowerCase()}`;
+  if (mapPlacesCache[cacheKey]) {
+    const places = mapPlacesCache[cacheKey];
+    clearMarkers();
+    renderResults(places);
+    places.forEach(addMarker);
+    if (places.length > 0 && map) {
+      const validPlaces = places.filter(p => p.lat && p.lng);
+      if (validPlaces.length > 0) {
+        map.fitBounds(L.latLngBounds(validPlaces.map(p => [p.lat, p.lng])), { padding: [40, 40], maxZoom: 14 });
+      }
+    }
+    return;
+  }
+
+  isMapSearching = true;
+  if (searchBtn) searchBtn.disabled = true;
   resultsDiv.innerHTML = `<p style="color:var(--text-muted); font-size:0.88rem; text-align:center; padding:2rem 0;">⏳ Searching OpenStreetMap...</p>`;
 
   try {
     const res = await fetch(`/api/places/search?query=${encodeURIComponent(query)}`);
     const data = await res.json();
     const places = data.places || [];
+    mapPlacesCache[cacheKey] = places;
 
     clearMarkers();
     renderResults(places);
@@ -139,27 +162,44 @@ async function searchPlaces(query) {
     }
   } catch (err) {
     if (resultsDiv) resultsDiv.innerHTML = `<p style="color:#f87171; font-size:0.88rem;">Error: ${escapeHtml(err.message)}</p>`;
+  } finally {
+    isMapSearching = false;
+    if (searchBtn) searchBtn.disabled = false;
   }
 }
 
 async function searchCity(cityKey) {
+  if (isMapSearching) return;
   const center = CITY_CENTERS[cityKey];
   if (!center || !map) return;
   map.setView(center, 12);
 
   const resultsDiv = document.getElementById('mapResults');
+  const cacheKey = `city_${cityKey}`;
+  if (mapPlacesCache[cacheKey]) {
+    const places = mapPlacesCache[cacheKey];
+    clearMarkers();
+    renderResults(places);
+    places.forEach(addMarker);
+    return;
+  }
+
+  isMapSearching = true;
   resultsDiv.innerHTML = `<p style="color:var(--text-muted); font-size:0.88rem; text-align:center; padding:2rem 0;">⏳ Loading OpenStreetMap data...</p>`;
 
   try {
     const res = await fetch(`/api/places/citytype?city=${encodeURIComponent(cityKey)}&type=tourist_attraction`);
     const data = await res.json();
     const places = data.places || [];
+    mapPlacesCache[cacheKey] = places;
 
     clearMarkers();
     renderResults(places);
     places.forEach(addMarker);
   } catch (err) {
     if (resultsDiv) resultsDiv.innerHTML = `<p style="color:#f87171; font-size:0.88rem;">Error: ${escapeHtml(err.message)}</p>`;
+  } finally {
+    isMapSearching = false;
   }
 }
 

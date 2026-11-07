@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Route Network Analyzer{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+{% endblock %}
+
+{% block content %}
+<section class="hero-header" style="margin-bottom: 1.5rem;">
+  <div class="hero-pill">
+    <span>🌐</span> Discrete Mathematics · Graph Theory
+  </div>
+  <h1 class="hero-title" style="font-size: 2.2rem;">
+    Route Network <span>Analyzer</span>
+  </h1>
+  <p class="hero-desc" style="font-size: 0.95rem;">
+    Explore real OpenStreetMap road networks. Intersections are vertices, roads are weighted edges by actual distance.
+    Compute <strong>Dijkstra's Shortest Path</strong>, run <strong>BFS/DFS</strong>, and inspect the <strong>Adjacency List &amp; Matrix</strong>.
+  </p>
+</section>
+
+<div class="analyzer-container">
+
+  <!-- Control Toolbar -->
+  <div class="analyzer-toolbar">
+    <div class="analyzer-controls">
+      <!-- City Select -->
+      <div>
+        <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">City Network</label>
+        <select id="analyzerCitySelect" class="form-select" style="min-width: 140px; padding: 0.5rem 0.9rem;">
+          <option value="pune" selected>Pune</option>
+          <option value="mumbai">Mumbai</option>
+          <option value="delhi">Delhi</option>
+          <option value="chennai">Chennai</option>
+          <option value="hyderabad">Hyderabad</option>
+        </select>
+      </div>
+
+      <!-- Start Node Select -->
+      <div style="flex: 1; min-width: 200px;">
+        <label style="font-size: 0.75rem; color: #34d399; display: block; margin-bottom: 0.25rem;">🟢 Start Vertex (A)</label>
+        <select id="startNodeSelect" class="form-select" style="width: 100%; padding: 0.5rem 0.9rem;">
+          <option value="">Loading junctions...</option>
+        </select>
+      </div>
+
+      <!-- Destination Node Select -->
+      <div id="destNodeGroup" style="flex: 1; min-width: 200px;">
+        <label style="font-size: 0.75rem; color: #f43f5e; display: block; margin-bottom: 0.25rem;">🔴 Destination Vertex (B)</label>
+        <select id="destNodeSelect" class="form-select" style="width: 100%; padding: 0.5rem 0.9rem;">
+          <option value="">Loading junctions...</option>
+        </select>
+      </div>
+
+      <!-- Algorithm Select -->
+      <div>
+        <label style="font-size: 0.75rem; color: var(--primary-light); display: block; margin-bottom: 0.25rem;">Algorithm</label>
+        <select id="algorithmSelect" class="form-select" style="min-width: 190px; padding: 0.5rem 0.9rem;">
+          <option value="dijkstra">🚀 Dijkstra (Shortest Path)</option>
+          <option value="bfs">🌊 BFS (Breadth-First Search)</option>
+          <option value="dfs">🌲 DFS (Depth-First Search)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="analyzer-actions">
+      <button id="runAlgorithmBtn" class="chat-send-btn" style="padding: 0.65rem 1.4rem;">
+        <span>Run</span> <span>⚡</span>
+      </button>
+      <button id="resetViewBtn" class="filter-btn" style="padding: 0.65rem 1.1rem;">
+        <span>Reset</span> <span>🔄</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Discrete Math Graph Metrics Strip -->
+  <div class="metrics-strip">
+    <div class="metric-card">
+      <span class="m-label">Vertices |V|</span>
+      <span id="metricVertices" class="m-val">--</span>
+      <span class="m-sub">Road Intersections</span>
+    </div>
+    <div class="metric-card">
+      <span class="m-label">Edges |E|</span>
+      <span id="metricEdges" class="m-val">--</span>
+      <span class="m-sub">Weighted Roads</span>
+    </div>
+    <div class="metric-card">
+      <span class="m-label">Graph Density</span>
+      <span id="metricDensity" class="m-val">--</span>
+      <span class="m-sub">2|E| / (|V|(|V|-1))</span>
+    </div>
+    <div class="metric-card">
+      <span class="m-label">Average Degree</span>
+      <span id="metricAvgDegree" class="m-val">--</span>
+      <span class="m-sub">Edges per Intersection</span>
+    </div>
+  </div>
+
+  <!-- Results Summary Banner (Hidden until run) -->
+  <div id="resultSummaryBanner" style="display: none; background: rgba(2, 132, 199, 0.1); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 1.25rem 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div id="resultTitle" style="font-size: 1.15rem; font-weight: 700; color: #fff;">Shortest Path Found</div>
+        <div id="resultSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">--</div>
+      </div>
+      <div id="resultBadges" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <!-- Badges injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- View Mode Switcher -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div class="view-mode-tabs">
+      <button class="view-tab-btn active" data-tab="tabMap">
+        <span>🗺️</span> Geographic Road Map
+      </button>
+      <button class="view-tab-btn" data-tab="tabTopology">
+        <span>🕸️</span> Visual Graph Topology
+      </button>
+      <button class="view-tab-btn" data-tab="tabAdjacency">
+        <span>📋</span> Adjacency Structures
+      </button>
+      <button class="view-tab-btn" data-tab="tabLog">
+        <span>📜</span> Algorithm Steps Log
+      </button>
+    </div>
+    <div id="statusIndicator" style="font-size: 0.82rem; color: var(--text-muted);">
+      Ready
+    </div>
+  </div>
+
+  <!-- TAB 1: Geographic Road Map (Leaflet) -->
+  <div id="tabMap" class="tab-panel active">
+    <div style="display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; min-height: 580px;">
+      <div class="graph-viewport-card" style="min-height: 580px; height: auto; display: flex; flex-direction: column; overflow: hidden;">
+        <div id="analyzerMap" style="flex: 1; min-height: 560px; border-radius: var(--radius-lg);"></div>
+        <p style="font-size:0.72rem; color:var(--text-dim); margin-top:0.5rem; padding: 0 0.5rem;">
+          Road network extracted from OpenStreetMap. Vertices: road intersections. Edges: roads with geodesic distance weights.
+        </p>
+      </div>
+
+      <!-- Map Details Sidebar -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem; overflow-y: auto; max-height: 600px; display: flex; flex-direction: column; gap: 1rem;">
+        <div class="panel-title"><span>📍</span> Path Breakdown</div>
+        <div id="pathBreakdownList" style="font-size: 0.85rem; color: var(--text-muted);">
+          <p style="text-align: center; padding: 2rem 0;">
+            Select a Start and Destination vertex, then click <strong>Run</strong> to compute the Dijkstra shortest path.
+          </p>
+        </div>
+
+        <div id="alternativeRoutesBox" style="display: none; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <div style="font-weight: 700; font-size: 0.85rem; color: #c084fc; margin-bottom: 0.5rem;">
+            <span>🔀</span> Alternative Path (Yen's Penalized)
+          </div>
+          <div id="alternativeRoutesContent" style="font-size: 0.82rem; color: var(--text-muted);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Visual Graph Topology (Vis.js Network) -->
+  <div id="tabTopology" class="tab-panel">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h3 style="font-size: 1.05rem; color: #fff;">Topological Graph Diagram</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">
+            Pure graph theory representation. Nodes are vertices, connections are weighted edges. Drag vertices to explore topology.
+          </p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="fitTopologyBtn" class="filter-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Fit View 🔍</button>
+        </div>
+      </div>
+      <div id="topologyNetwork"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Adjacency Structures (Discrete Math Inspector) -->
+  <div id="tabAdjacency" class="tab-panel">
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <!-- Subtabs -->
+      <div style="display: flex; gap: 0.75rem;">
+        <button id="subtabListBtn" class="filter-btn active">Adjacency List</button>
+        <button id="subtabMatrixBtn" class="filter-btn">Adjacency Matrix</button>
+      </div>
+
+      <!-- Adjacency List Panel -->
+      <div id="panelAdjList">
+        <div class="adj-list-grid" id="adjListGrid">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- Adjacency Matrix Panel -->
+      <div id="panelAdjMatrix" style="display: none;">
+        <div class="matrix-scroll-wrapper">
+          <table class="matrix-table" id="matrixTable">
+            <!-- Injected dynamically -->
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Algorithm Execution Log -->
+  <div id="tabLog" class="tab-panel">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem;">
+      <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.3rem;">Algorithm Execution Log</h3>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Step-by-step trace showing priority queue relaxations (Dijkstra) or FIFO/LIFO transitions (BFS/DFS).
+      </p>
+      <div style="max-height: 520px; overflow-y: auto;">
+        <table class="steps-log-table">
+          <thead>
+            <tr>
+              <th>Step #</th>
+              <th>Action / State</th>
+              <th>Target Vertex</th>
+              <th>Cost / Level</th>
+            </tr>
+          </thead>
+          <tbody id="stepsLogBody">
+            <tr>
+              <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                Run an algorithm to inspect the step-by-step Discrete Mathematics progression.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="{{ url_for('static', filename='js/route_analyzer.js') }}"></script>
+{% endblock %}
+

@@ -1,7 +1,7 @@
 """
 Tourist Guide Assistant
-Flask Backend - OpenStreetMap Integration
-(Nominatim + Overpass API + OSRM — no API key required)
+Flask Backend - OpenStreetMap Integration + Route Network Analyzer
+(Nominatim + Overpass API + OSRM + Custom Graph Theory Algorithms)
 """
 
 import os
@@ -15,6 +15,8 @@ from osm_service import (
     format_osm_place, CITY_CENTERS, OVERPASS_FILTERS
 )
 from intent_parser import parse_intent
+from cache_manager import places_cache
+from graph_engine import get_network_graph, list_available_network_cities
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["JSON_AS_ASCII"] = False
@@ -48,13 +50,19 @@ def places_redirect():
     return explore_page()
 
 
+@app.route("/route-analyzer")
+def route_analyzer_page():
+    """Route Network Analyzer page (Discrete Mathematics feature)."""
+    return render_template("route_analyzer.html", page="analyzer")
+
+
 # ---------------------------------------------------------------------------
 # CHAT API
 # ---------------------------------------------------------------------------
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
-    """Main chatbot endpoint — parses intent and calls OSM APIs."""
+    """Main chatbot endpoint — parses intent and calls OSM / Graph APIs."""
     data = request.get_json() or {}
     message = data.get("message", "").strip()
 
@@ -67,7 +75,28 @@ def api_chat():
     extra = {}
 
     try:
-        if intent["intent"] == "DIRECTIONS":
+        if intent["intent"] == "ROUTE_ANALYZER_INFO":
+            city_key = intent.get("city_key", "pune")
+            graph = get_network_graph(city_key)
+            if graph:
+                metrics = graph.get_summary()["metrics"]
+                answer = (
+                    f"🌐 **Route Network Analyzer ({graph.city_name})**\n\n"
+                    f"The OpenStreetMap road network for **{graph.city_name}** contains:\n"
+                    f"• **Vertices (Intersections):** {metrics['num_vertices']} nodes\n"
+                    f"• **Edges (Roads):** {metrics['num_edges']} road segments\n"
+                    f"• **Graph Density:** {metrics['density']}\n"
+                    f"• **Average Degree:** {metrics['avg_degree']} edges/node\n\n"
+                    f"You can compute **Dijkstra's Shortest Path**, run **BFS/DFS Traversals**, and inspect the **Adjacency List & Matrix**:\n\n"
+                    f"[👉 Open Route Network Analyzer ↗](/route-analyzer?city={city_key})"
+                )
+            else:
+                answer = (
+                    "🌐 You can explore real OpenStreetMap road networks, Dijkstra's algorithm, BFS, and DFS in our dedicated analyzer:\n\n"
+                    "[👉 Open Route Network Analyzer ↗](/route-analyzer)"
+                )
+
+        elif intent["intent"] == "DIRECTIONS":
             origin = intent["origin"]
             dest = intent["destination"]
             result = get_directions(origin, dest)
@@ -168,48 +197,66 @@ def api_chat():
 
 
 # ---------------------------------------------------------------------------
-# PLACES API ENDPOINTS
+# PLACES API ENDPOINTS (WITH FAST CACHING)
 # ---------------------------------------------------------------------------
 
 @app.route("/api/places/citytype", methods=["GET"])
 def api_places_citytype():
-    """Get places for a city + type using hardcoded city centres."""
-    city = (request.args.get("city") or "mumbai").lower()
+    """Get places for a city + type using hardcoded city centres (cached)."""
+    city = (request.args.get("city") or "mumbai").lower().strip()
     place_type = request.args.get("type", "tourist_attraction")
     radius = int(request.args.get("radius", 4000))
 
     if city not in CITY_CENTERS:
         return jsonify({"error": f"Unknown city '{city}'", "places": []}), 400
 
+    cache_key = f"citytype_{city}_{place_type}_{radius}"
+    cached = places_cache.get(cache_key)
+    if cached is not None:
+        return jsonify(cached)
+
     c = CITY_CENTERS[city]
     res = search_nearby(c["lat"], c["lng"], place_type, radius)
     places = res.get("places", [])
-    return jsonify({"places": places, "count": len(places), "city": city, "type": place_type})
+    response_data = {"places": places, "count": len(places), "city": city, "type": place_type}
+    places_cache.set(cache_key, response_data)
+    return jsonify(response_data)
 
 
 @app.route("/api/places/search", methods=["GET", "POST"])
 def api_places_search():
-    """Search places by text query (geocode then nearby search)."""
+    """Search places by text query (geocode then nearby search, cached)."""
     if request.method == "POST":
         data = request.get_json() or {}
-        query = data.get("query", "")
+        query = data.get("query", "").strip()
         place_type = data.get("type", "tourist_attraction")
         radius = int(data.get("radius", 4000))
     else:
-        query = request.args.get("query", "")
+        query = request.args.get("query", "").strip()
         place_type = request.args.get("type", "tourist_attraction")
         radius = int(request.args.get("radius", 4000))
 
     if not query:
         return jsonify({"error": "query param required", "places": []}), 400
 
+    cache_key = f"places_search_{query.lower()}_{place_type}_{radius}"
+    cached = places_cache.get(cache_key)
+    if cached is not None:
+        return jsonify(cached)
+
     loc = geocode(query)
     if not loc:
-        return jsonify({"error": f"Could not geocode '{query}'", "places": []}), 404
+        # Fallback to direct Nominatim places query
+        places = search_nominatim(f"{place_type.replace('_', ' ')} in {query}")
+        response_data = {"places": places, "count": len(places)}
+        places_cache.set(cache_key, response_data)
+        return jsonify(response_data)
 
     res = search_nearby(loc["lat"], loc["lng"], place_type, radius)
     places = res.get("places", [])
-    return jsonify({"places": places, "count": len(places)})
+    response_data = {"places": places, "count": len(places)}
+    places_cache.set(cache_key, response_data)
+    return jsonify(response_data)
 
 
 @app.route("/api/places/nearby", methods=["POST"])
@@ -219,7 +266,7 @@ def api_places_nearby():
     lat = data.get("lat")
     lng = data.get("lng")
     place_type = data.get("type", "tourist_attraction")
-    radius = int(data.get("radius", 5000))
+    radius = int(data.get("radius", 3000))
 
     if lat is None or lng is None:
         return jsonify({"error": "lat and lng required", "places": []}), 400
@@ -261,13 +308,90 @@ def api_cities():
     return jsonify(CITY_CENTERS)
 
 
+# ---------------------------------------------------------------------------
+# ROUTE NETWORK ANALYZER API (DISCRETE MATHEMATICS FEATURE)
+# ---------------------------------------------------------------------------
+
+@app.route("/api/network/cities", methods=["GET"])
+def api_network_cities():
+    """Get list of cities with pre-built OpenStreetMap road networks."""
+    return jsonify({"cities": list_available_network_cities()})
+
+
+@app.route("/api/network/graph", methods=["GET"])
+def api_network_graph():
+    """Get road network graph summary (nodes, edges, adjacency list, matrix, metrics)."""
+    city = request.args.get("city", "pune").lower().strip()
+    refresh = request.args.get("refresh", "false").lower() in ("true", "1")
+    graph = get_network_graph(city, force_refresh=refresh)
+    if not graph:
+        return jsonify({"error": f"Road network for city '{city}' not found", "success": False}), 404
+    return jsonify(graph.get_summary())
+
+
+@app.route("/api/network/dijkstra", methods=["POST"])
+def api_network_dijkstra():
+    """Compute Dijkstra's shortest path and alternative path on real OSM road network."""
+    data = request.get_json() or {}
+    city = data.get("city", "pune").lower().strip()
+    start_id = str(data.get("start_id", "")).strip()
+    dest_id = str(data.get("dest_id", "")).strip()
+
+    if not start_id or not dest_id:
+        return jsonify({"error": "start_id and dest_id required", "success": False}), 400
+
+    graph = get_network_graph(city)
+    if not graph:
+        return jsonify({"error": f"City '{city}' not found", "success": False}), 404
+
+    result = graph.find_shortest_with_alternatives(start_id, dest_id)
+    return jsonify(result)
+
+
+@app.route("/api/network/bfs", methods=["POST"])
+def api_network_bfs():
+    """Execute Breadth-First Search on the road network."""
+    data = request.get_json() or {}
+    city = data.get("city", "pune").lower().strip()
+    start_id = str(data.get("start_id", "")).strip()
+
+    if not start_id:
+        return jsonify({"error": "start_id required", "success": False}), 400
+
+    graph = get_network_graph(city)
+    if not graph:
+        return jsonify({"error": f"City '{city}' not found", "success": False}), 404
+
+    result = graph.bfs(start_id)
+    return jsonify(result)
+
+
+@app.route("/api/network/dfs", methods=["POST"])
+def api_network_dfs():
+    """Execute Depth-First Search on the road network."""
+    data = request.get_json() or {}
+    city = data.get("city", "pune").lower().strip()
+    start_id = str(data.get("start_id", "")).strip()
+
+    if not start_id:
+        return jsonify({"error": "start_id required", "success": False}), 400
+
+    graph = get_network_graph(city)
+    if not graph:
+        return jsonify({"error": f"City '{city}' not found", "success": False}), 404
+
+    result = graph.dfs(start_id)
+    return jsonify(result)
+
+
 @app.route("/api/status", methods=["GET"])
 def api_status():
     """Health check."""
     return jsonify({
         "status": "ok",
-        "data_source": "OpenStreetMap (Nominatim + Overpass API + OSRM)",
+        "data_source": "OpenStreetMap (Nominatim + Overpass API + OSRM + Custom Graph Theory Engine)",
         "api_key_required": False,
+        "features": ["Chatbot", "Interactive Map", "Explorer", "Route Network Analyzer (Dijkstra, BFS, DFS)"],
         "app": "Tourist Guide Assistant"
     })
 

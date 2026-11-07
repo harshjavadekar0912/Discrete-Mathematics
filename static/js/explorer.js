@@ -1,6 +1,6 @@
 /**
  * Tourist Places Explorer
- * Powered by OpenStreetMap — Overpass API via /api/places/citytype
+ * Powered by OpenStreetMap — Fast Cached Client
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,9 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let activeCity = 'mumbai';
   let activePlaceType = 'tourist_attraction';
+  let isFetching = false;
+  const clientCache = {};
 
   categoryChips.forEach(chip => {
     chip.addEventListener('click', () => {
+      if (isFetching) return;
       categoryChips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       activePlaceType = chip.getAttribute('data-type') || 'tourist_attraction';
@@ -23,12 +26,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (citySelect) {
     citySelect.addEventListener('change', () => {
+      if (isFetching) return;
       activeCity = citySelect.value;
       fetchAndRender();
     });
   }
 
   async function fetchAndRender() {
+    const cacheKey = `${activeCity}_${activePlaceType}`;
+
+    // Instant render from client-side memory cache
+    if (clientCache[cacheKey]) {
+      const cachedPlaces = clientCache[cacheKey];
+      if (countBadge) countBadge.innerText = `${cachedPlaces.length} Places (Cached)`;
+      renderCards(cachedPlaces);
+      return;
+    }
+
+    isFetching = true;
     if (countBadge) countBadge.innerText = 'Loading...';
     if (placesGrid) placesGrid.innerHTML = `
       <div style="grid-column: 1/-1; text-align:center; padding:3rem; color:var(--text-muted);">
@@ -55,11 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const places = data.places || [];
+      clientCache[cacheKey] = places;
       if (countBadge) countBadge.innerText = `${places.length} Places Found`;
       renderCards(places);
     } catch (err) {
       if (countBadge) countBadge.innerText = 'Error';
       if (placesGrid) placesGrid.innerHTML = `<div style="grid-column:1/-1; color:#f87171; text-align:center; padding:3rem;">Error: ${escapeHtml(err.message)}</div>`;
+    } finally {
+      isFetching = false;
     }
   }
 
@@ -79,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     placesGrid.innerHTML = places.map(p => {
       const cat = p.category || 'Place';
-      const badgeClass = `badge-${cat.toLowerCase()}`;
+      const badgeClass = `badge-${cat.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
       const hours = p.opening_hours ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem;">🕐 ${escapeHtml(p.opening_hours)}</div>` : '';
       const phone = p.phone ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem;">📞 ${escapeHtml(p.phone)}</div>` : '';
       const cuisine = p.cuisine ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem;">🍴 ${escapeHtml(p.cuisine)}</div>` : '';

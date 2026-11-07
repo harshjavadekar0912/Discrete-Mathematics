@@ -116,6 +116,19 @@ def parse_intent(text: str) -> dict:
             place_type_label = label
             break
     
+    # Detect route network / discrete math analyzer intent
+    if any(k in lowered for k in ["route network", "road network", "graph theory", "dijkstra", "shortest path algorithm", "adjacency", "bfs", "dfs", "network analyzer"]):
+        return {
+            "intent": "ROUTE_ANALYZER_INFO",
+            "city_key": city_key or "pune",
+            "city_full": city_full or "Pune, India",
+            "query": text,
+            "place_type": None,
+            "landmark": None,
+            "origin": None,
+            "destination": None,
+        }
+
     # Determine intent
     if landmark and place_type_api:
         # nearby landmark search

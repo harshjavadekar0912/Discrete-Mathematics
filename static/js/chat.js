@@ -1,17 +1,21 @@
 /**
  * Tourist Guide Assistant - Chat Client Logic
- * Powered by OpenStreetMap (Nominatim + Overpass API + OSRM)
+ * Powered by OpenStreetMap (Nominatim + Overpass API + OSRM) + Route Network Analyzer
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chatMessages');
   const chatForm = document.getElementById('chatForm');
   const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
   const queryChips = document.querySelectorAll('.chip-btn');
+
+  let isSubmitting = false;
 
   // Handle Quick Chips
   queryChips.forEach(chip => {
     chip.addEventListener('click', () => {
+      if (isSubmitting) return;
       const queryText = chip.getAttribute('data-query');
       if (queryText) {
         chatInput.value = queryText;
@@ -20,15 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Handle Form Submit
+  // Handle Form Submit with Debounce & Locking
   chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     const message = chatInput.value.trim();
     if (!message) return;
 
+    isSubmitting = true;
+    if (sendBtn) sendBtn.disabled = true;
+    chatInput.disabled = true;
+
     appendUserMessage(message);
     chatInput.value = '';
-    chatInput.focus();
 
     const typingElem = appendTypingIndicator();
 
@@ -53,6 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
         answer: `Connection error: ${err.message}. Please verify the Flask server is running.`,
         places: []
       });
+    } finally {
+      isSubmitting = false;
+      if (sendBtn) sendBtn.disabled = false;
+      chatInput.disabled = false;
+      chatInput.focus();
     }
   });
 
@@ -125,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderPlaceCard(p) {
     const cat = p.category || 'Place';
-    const badgeClass = `badge-${cat.toLowerCase()}`;
+    const badgeClass = `badge-${cat.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
     const name = p.name || 'Unknown Place';
     const address = p.address || '';
     const hours = p.opening_hours ? `🕐 ${p.opening_hours}` : '';
@@ -171,12 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function formatMarkdown(text) {
     if (!text) return '';
-    // Don't double-escape — the text from the server may contain markdown links [label](url)
     return text
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:#38bdf8;">$1</a>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+        const isInternal = url.startsWith('/');
+        return `<a href="${url}" ${isInternal ? '' : 'target="_blank" rel="noopener"'} style="color:#38bdf8; font-weight:600; text-decoration:underline;">${linkText}</a>`;
+      })
       .replace(/\n/g, '<br>');
   }
 });
